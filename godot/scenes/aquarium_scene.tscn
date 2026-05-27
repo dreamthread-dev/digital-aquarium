@@ -1,3 +1,20 @@
-[gd_scene format=3 uid="uid://dmyg1x2g4f5m"]
+[gd_scene load_steps=3 format=3 uid="uid://dmyg1x2g4f5m"]
+
+[ext_resource type="Shader" path="res://shaders/aquarium_bg.gdshader" id="1_kjuqy"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_j0k6b"]
+shader = ExtResource("1_kjuqy")
+shader_parameter/color_top = Color(0.02, 0.12, 0.22, 1)
+shader_parameter/color_bottom = Color(0.005, 0.03, 0.08, 1)
+shader_parameter/caustics_speed = 0.5
+shader_parameter/caustics_scale = 2.0
+shader_parameter/caustics_strength = 0.18
+shader_parameter/caustics_fade = 1.2
 
 [node name="AquariumScene" type="Node2D"]
+
+[node name="Background" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_j0k6b")
+offset_right = 8640.0
+offset_bottom = 3840.0
+mouse_filter = 2
