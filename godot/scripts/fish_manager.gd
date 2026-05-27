@@ -72,10 +72,10 @@ func _spawn_initial_fishes() -> void:
 		# 奥行き (depth) をランダムに付与 (0.0 手前 〜 1.0 奥)
 		var p_depth: float = randf()
 		
-		spawn_fish(tex, start_pos, p_depth)
+		spawn_fish(tex, start_pos, p_depth, false)
 
 # 新規魚の生成 (WebSocket等からの受信時も呼び出す共通IF)
-func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0) -> void:
+func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0, start_falling: bool = true) -> void:
 	if not fish_scene:
 		push_error("FishManager: fish_scene PackedScene is not configured.")
 		return
@@ -87,15 +87,25 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 		
 	# 初期パラメータ設定
 	if start_pos == Vector2.ZERO:
-		# 位置指定がない場合は画面外の上部(落下演出用)または中央ランダム
 		var rx: float = randf_range(500.0, screen_size.x - 500.0)
-		start_pos = Vector2(rx, 100.0) # 水面付近
+		if start_falling:
+			start_pos = Vector2(rx, -150.0) # 画面外上部
+		else:
+			var ry: float = randf_range(400.0, screen_size.y - 400.0)
+			start_pos = Vector2(rx, ry)
 	
 	fish_instance.position = start_pos
 	fish_instance.noise_gen = noise_gen
 	
 	# Boidsパラメータの初期同期
 	_sync_fish_params(fish_instance)
+	
+	# 落下状態の初期化
+	if start_falling:
+		fish_instance.current_state = Fish.State.STATE_SPAWNING
+		fish_instance.velocity = Vector2(0.0, 200.0) # 下方向への初速
+	else:
+		fish_instance.current_state = Fish.State.STATE_ACTIVE
 	
 	# シーンに追加 (描画されるようにする)
 	add_child(fish_instance)
@@ -113,10 +123,10 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 	
 	# FIFO制御 (最大匹数を超えた場合は最古の魚を消滅)
 	if fishes.size() > max_fishes:
-		var oldest_fish: Node2D = fishes.pop_front()
+		var oldest: Node2D = fishes.pop_front()
+		var oldest_fish := oldest as Fish
 		if is_instance_valid(oldest_fish):
-			# 消滅演出（#7）はのちのタスクなので、今はシンプルに破棄します
-			oldest_fish.queue_free()
+			oldest_fish.start_dying()
 
 # 各魚個体へBoidsパラメータを一括同期させる
 func _sync_fish_params(fish: Fish) -> void:
@@ -144,31 +154,32 @@ func _process(delta: float) -> void:
 	var boundary: Rect2 = Rect2(Vector2.ZERO, screen_size)
 	var qtree: Quadtree = Quadtree.new(boundary, 8)
 	
-	# 有効な魚のみをインサート
-	var active_fishes: Array[Node2D] = []
+	# 有効かつアクティブな魚のみをインサート
 	for f in fishes:
 		if is_instance_valid(f):
-			qtree.insert(f)
-			active_fishes.append(f)
+			var fish := f as Fish
+			if fish and fish.current_state == Fish.State.STATE_ACTIVE:
+				qtree.insert(f)
 			
 	# 2. 各魚の近傍探索と移動更新
-	for f in active_fishes:
+	for f in fishes:
 		var fish := f as Fish
 		if not is_instance_valid(fish):
 			continue
 			
-		# 周囲の探索範囲 (最も大きい半径を基準にする)
-		var query_radius: float = maxf(cohesion_radius, maxf(alignment_radius, separation_radius))
-		var query_rect: Rect2 = Rect2(
-			fish.global_position - Vector2(query_radius, query_radius),
-			Vector2(query_radius * 2.0, query_radius * 2.0)
-		)
-		
-		# Quadtree を用いて範囲内の近傍オブジェクトを高速抽出
 		var neighbors: Array[Node2D] = []
-		qtree.query(query_rect, neighbors)
 		
-		# 位置と方向の物理移動更新を実行
+		# アクティブな魚のみ近傍探索を行う
+		if fish.current_state == Fish.State.STATE_ACTIVE:
+			# 周囲の探索範囲 (最も大きい半径を基準にする)
+			var query_radius: float = maxf(cohesion_radius, maxf(alignment_radius, separation_radius))
+			var query_rect: Rect2 = Rect2(
+				fish.global_position - Vector2(query_radius, query_radius),
+				Vector2(query_radius * 2.0, query_radius * 2.0)
+			)
+			qtree.query(query_rect, neighbors)
+		
+		# 位置と方向の物理移動更新を実行 (落下中の魚も update_movement 内で落下が処理される)
 		fish.update_movement(delta, neighbors, screen_size)
 
 # ロガーヘルパー
