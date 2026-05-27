@@ -8,6 +8,11 @@ extends Node2D
 
 var fishes: Array[Node2D] = []
 var screen_size: Vector2 = Vector2(8640, 3840)
+var base_speed: float = 120.0
+var wall_margin: float = 300.0
+
+@onready var ambient_player: AudioStreamPlayer = $"../AmbientPlayer"
+@onready var splash_player: AudioStreamPlayer = $"../SplashPlayer"
 
 # デフォルト魚のテクスチャプール
 var default_textures: Array[Texture2D] = []
@@ -46,6 +51,15 @@ func _ready() -> void:
 		if ws_client:
 			ws_client.fish_received.connect(_on_fish_received)
 			logger_info("Connected to WebSocketClient fish_received signal.")
+	
+	# 環境音の読み込みと再生 (フォールバック対応)
+	var ambient_path := "res://audio/ambient_water.ogg"
+	if ResourceLoader.exists(ambient_path) and ambient_player:
+		var stream := load(ambient_path) as AudioStream
+		if stream:
+			ambient_player.stream = stream
+			ambient_player.play()
+			logger_info("Playing ambient water loop.")
 	
 	logger_info("FishManager ready. Spawned initial fishes.")
 
@@ -152,6 +166,11 @@ func _sync_fish_params(fish: Fish) -> void:
 	fish.cohesion_weight = cohesion_weight
 	fish.wander_weight = wander_weight
 	fish.wall_avoid_weight = wall_avoid_weight
+	
+	# 速度と壁マージンの同期
+	fish.speed = base_speed * fish.speed_factor
+	fish.max_speed = fish.speed * 1.5
+	fish.wall_margin = wall_margin
 
 # デバッグUIなどからパラメータが一括更新された際、稼働中の魚全てへ反映する
 func update_all_fish_params() -> void:
@@ -194,6 +213,17 @@ func _process(delta: float) -> void:
 		
 		# 位置と方向の物理移動更新を実行 (落下中の魚も update_movement 内で落下が処理される)
 		fish.update_movement(delta, neighbors, screen_size)
+
+# 着水音の再生 (フォールバック対応)
+func play_splash_sound() -> void:
+	var splash_path := "res://audio/splash.ogg"
+	if ResourceLoader.exists(splash_path) and splash_player:
+		if not splash_player.stream:
+			var stream := load(splash_path) as AudioStream
+			if stream:
+				splash_player.stream = stream
+		if splash_player.stream:
+			splash_player.play()
 
 # ロガーヘルパー
 func logger_info(msg: String) -> void:
