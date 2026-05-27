@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://dmyg1x2g4f5m"]
+[gd_scene load_steps=7 format=3 uid="uid://dmyg1x2g4f5m"]
 
 [ext_resource type="Shader" path="res://shaders/aquarium_bg.gdshader" id="1_kjuqy"]
 [ext_resource type="Script" path="res://scripts/fish_manager.gd" id="2_mager"]
 [ext_resource type="Script" path="res://scripts/web_socket_client.gd" id="3_wscli"]
+[ext_resource type="PackedScene" uid="uid://cxpyg8mx2f5m" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://cxpyg8mx2f5m" path="res://scenes/debug_ui.tscn" id="5_dbgui"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j0k6b"]
 shader = ExtResource("1_kjuqy")
@@ -26,3 +28,11 @@ script = ExtResource("2_mager")
 
 [node name="WebSocketClient" type="Node" parent="."]
 script = ExtResource("3_wscli")
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="DebugUI" parent="." instance=ExtResource("5_dbgui")]
+
+[node name="AmbientPlayer" type="AudioStreamPlayer" parent="."]
+
+[node name="SplashPlayer" type="AudioStreamPlayer" parent="."]

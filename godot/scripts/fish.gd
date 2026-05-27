@@ -16,6 +16,7 @@ var speed: float = 120.0
 var max_speed: float = 180.0
 var depth: float = 0.0
 var noise_offset: float = 0.0
+var speed_factor: float = 1.0
 
 # 現在の状態
 var current_state: State = State.STATE_ACTIVE
@@ -60,7 +61,8 @@ func _ready() -> void:
 	noise_offset = randf_range(0.0, 10000.0)
 	
 	# スピードに±20%の個体差を付与
-	speed = randf_range(96.0, 144.0)
+	speed_factor = randf_range(0.8, 1.2)
+	speed *= speed_factor
 	max_speed = speed * 1.5
 	
 	# 初期速度ベクトル
@@ -199,6 +201,11 @@ func _spawn_splash() -> void:
 		get_parent().add_child(splash)
 		splash.global_position = global_position
 		splash.emitting = true
+		
+		# マネージャー経由で着水音を再生
+		var manager := get_parent() as FishManager
+		if manager and manager.has_method("play_splash_sound"):
+			manager.play_splash_sound()
 
 # 泡生成
 func _spawn_bubbles() -> void:
