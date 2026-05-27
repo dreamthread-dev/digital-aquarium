@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://dmyg1x2g4f5m"]
+[gd_scene load_steps=4 format=3 uid="uid://dmyg1x2g4f5m"]
 
 [ext_resource type="Shader" path="res://shaders/aquarium_bg.gdshader" id="1_kjuqy"]
+[ext_resource type="Script" path="res://scripts/fish_manager.gd" id="2_mager"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j0k6b"]
 shader = ExtResource("1_kjuqy")
@@ -18,3 +19,6 @@ material = SubResource("ShaderMaterial_j0k6b")
 offset_right = 8640.0
 offset_bottom = 3840.0
 mouse_filter = 2
+
+[node name="FishManager" type="Node2D" parent="."]
+script = ExtResource("2_mager")

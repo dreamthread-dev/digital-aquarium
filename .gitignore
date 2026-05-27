@@ -12,6 +12,7 @@ env/
 .godot/
 *.translation
 *.import
+*.uid
 *~
 
 # OS / Editor

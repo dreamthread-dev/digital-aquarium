@@ -1,0 +1,176 @@
+class_name FishManager
+extends Node2D
+
+# 静的型付け必須ルールを適用
+@export var fish_scene: PackedScene = preload("res://scenes/fish.tscn")
+@export var max_fishes: int = 300
+@export var initial_fish_count: int = 25
+
+var fishes: Array[Node2D] = []
+var screen_size: Vector2 = Vector2(8640, 3840)
+
+# デフォルト魚のテクスチャプール
+var default_textures: Array[Texture2D] = []
+
+# ふらつき用Perlin Noiseのジェネレータ
+var noise_gen: FastNoiseLite
+
+# Boids グローバルパラメータ (デバッグUIと連携するためマネージャー側で保持)
+var separation_radius: float = 80.0
+var alignment_radius: float = 150.0
+var cohesion_radius: float = 200.0
+
+var separation_weight: float = 1.5
+var alignment_weight: float = 1.0
+var cohesion_weight: float = 1.0
+var wander_weight: float = 0.3
+var wall_avoid_weight: float = 2.5
+
+func _ready() -> void:
+	# ノイズの初期設定
+	noise_gen = FastNoiseLite.new()
+	noise_gen.noise_type = FastNoiseLite.TYPE_PERLIN
+	noise_gen.frequency = 0.02
+	noise_gen.seed = randi()
+	
+	# デフォルト魚アセットのロード
+	_load_default_textures()
+	
+	# 起動時のデフォルト魚の生成
+	_spawn_initial_fishes()
+	logger_info("FishManager ready. Spawned initial fishes.")
+
+func _load_default_textures() -> void:
+	var paths: Array[String] = [
+		"res://assets/default_fish/fish_01.png",
+		"res://assets/default_fish/fish_02.png",
+		"res://assets/default_fish/fish_03.png"
+	]
+	for path in paths:
+		if ResourceLoader.exists(path):
+			var tex: Texture2D = load(path) as Texture2D
+			if tex:
+				default_textures.append(tex)
+		else:
+			push_warning("Default fish texture not found at path: " + path)
+
+func _spawn_initial_fishes() -> void:
+	if default_textures.size() == 0:
+		push_error("Cannot spawn initial fishes: No textures loaded.")
+		return
+		
+	for i in range(initial_fish_count):
+		# ランダムなテクスチャを選択
+		var tex: Texture2D = default_textures[randi() % default_textures.size()]
+		
+		# 画面の有効範囲内のランダムな位置に配置
+		var margin: float = 400.0
+		var rx: float = randf_range(margin, screen_size.x - margin)
+		var ry: float = randf_range(margin, screen_size.y - margin)
+		var start_pos: Vector2 = Vector2(rx, ry)
+		
+		# 奥行き (depth) をランダムに付与 (0.0 手前 〜 1.0 奥)
+		var p_depth: float = randf()
+		
+		spawn_fish(tex, start_pos, p_depth)
+
+# 新規魚の生成 (WebSocket等からの受信時も呼び出す共通IF)
+func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0) -> void:
+	if not fish_scene:
+		push_error("FishManager: fish_scene PackedScene is not configured.")
+		return
+		
+	var fish_instance := fish_scene.instantiate() as Fish
+	if not fish_instance:
+		push_error("FishManager: Failed to instantiate fish scene.")
+		return
+		
+	# 初期パラメータ設定
+	if start_pos == Vector2.ZERO:
+		# 位置指定がない場合は画面外の上部(落下演出用)または中央ランダム
+		var rx: float = randf_range(500.0, screen_size.x - 500.0)
+		start_pos = Vector2(rx, 100.0) # 水面付近
+	
+	fish_instance.position = start_pos
+	fish_instance.noise_gen = noise_gen
+	
+	# Boidsパラメータの初期同期
+	_sync_fish_params(fish_instance)
+	
+	# シーンに追加 (描画されるようにする)
+	add_child(fish_instance)
+	
+	# テクスチャの適用 (必ず add_child 後に行う)
+	if fish_instance.sprite:
+		fish_instance.sprite.texture = texture
+	
+	# 奥行きの適用
+	var depth_val: float = p_depth if p_depth >= 0.0 else randf()
+	fish_instance.set_depth(depth_val)
+	
+	# 配列へ登録
+	fishes.append(fish_instance)
+	
+	# FIFO制御 (最大匹数を超えた場合は最古の魚を消滅)
+	if fishes.size() > max_fishes:
+		var oldest_fish: Node2D = fishes.pop_front()
+		if is_instance_valid(oldest_fish):
+			# 消滅演出（#7）はのちのタスクなので、今はシンプルに破棄します
+			oldest_fish.queue_free()
+
+# 各魚個体へBoidsパラメータを一括同期させる
+func _sync_fish_params(fish: Fish) -> void:
+	fish.separation_radius = separation_radius
+	fish.alignment_radius = alignment_radius
+	fish.cohesion_radius = cohesion_radius
+	
+	fish.separation_weight = separation_weight
+	fish.alignment_weight = alignment_weight
+	fish.cohesion_weight = cohesion_weight
+	fish.wander_weight = wander_weight
+	fish.wall_avoid_weight = wall_avoid_weight
+
+# デバッグUIなどからパラメータが一括更新された際、稼働中の魚全てへ反映する
+func update_all_fish_params() -> void:
+	for f in fishes:
+		var fish := f as Fish
+		if is_instance_valid(fish):
+			_sync_fish_params(fish)
+
+# 毎フレームの更新処理（Boids一括処理 & 空間分割）
+func _process(delta: float) -> void:
+	# 1. 空間分割ツリー (Quadtree) の構築
+	# 水槽全体 (8640x3840) の境界ボックス
+	var boundary: Rect2 = Rect2(Vector2.ZERO, screen_size)
+	var qtree: Quadtree = Quadtree.new(boundary, 8)
+	
+	# 有効な魚のみをインサート
+	var active_fishes: Array[Node2D] = []
+	for f in fishes:
+		if is_instance_valid(f):
+			qtree.insert(f)
+			active_fishes.append(f)
+			
+	# 2. 各魚の近傍探索と移動更新
+	for f in active_fishes:
+		var fish := f as Fish
+		if not is_instance_valid(fish):
+			continue
+			
+		# 周囲の探索範囲 (最も大きい半径を基準にする)
+		var query_radius: float = maxf(cohesion_radius, maxf(alignment_radius, separation_radius))
+		var query_rect: Rect2 = Rect2(
+			fish.global_position - Vector2(query_radius, query_radius),
+			Vector2(query_radius * 2.0, query_radius * 2.0)
+		)
+		
+		# Quadtree を用いて範囲内の近傍オブジェクトを高速抽出
+		var neighbors: Array[Node2D] = []
+		qtree.query(query_rect, neighbors)
+		
+		# 位置と方向の物理移動更新を実行
+		fish.update_movement(delta, neighbors, screen_size)
+
+# ロガーヘルパー
+func logger_info(msg: String) -> void:
+	print("[FishManager] INFO: " + msg)
