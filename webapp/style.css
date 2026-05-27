@@ -1,0 +1,106 @@
+:root {
+    --bg-color: #0f172a;
+    --card-color: #1e293b;
+    --text-color: #f8fafc;
+    --accent-color: #38bdf8;
+}
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    background-color: var(--card-color);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.placeholder-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.fish-thumb {
+    background-color: #334155;
+    padding: 40px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.fish-thumb:hover {
+    border-color: var(--accent-color);
+    background-color: #475569;
+}
+
+.canvas-container {
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 8px;
+    width: 256px;
+    height: 256px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#paint-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.palette {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.color-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #64748b;
+    color: white;
+}
+
+#send-btn {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    font-weight: bold;
+}

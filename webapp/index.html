@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>デジタル水族館 塗り絵アプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐠 デジタル水族館 塗り絵</h1>
+        </header>
+        
+        <main>
+            <section id="step-select" class="step-section">
+                <h2>ステップ 1: 魚を選ぶ</h2>
+                <p>好きな魚をタップしてね！</p>
+                <div class="placeholder-grid">
+                    <div class="fish-thumb" onclick="selectFish('fish_01')">さかな 1</div>
+                    <div class="fish-thumb" onclick="selectFish('fish_02')">さかな 2</div>
+                </div>
+            </section>
+
+            <section id="step-paint" class="step-section hidden">
+                <h2>ステップ 2: 色をぬる</h2>
+                <div class="canvas-container">
+                    <canvas id="paint-canvas" width="512" height="512"></canvas>
+                </div>
+                <div class="palette">
+                    <button class="color-btn" style="background: #ff5e57;" onclick="setColor('#ff5e57')"></button>
+                    <button class="color-btn" style="background: #ffdd59;" onclick="setColor('#ffdd59')"></button>
+                    <button class="color-btn" style="background: #0be881;" onclick="setColor('#0be881')"></button>
+                    <button class="color-btn" style="background: #00d8d6;" onclick="setColor('#00d8d6')"></button>
+                    <button class="color-btn" style="background: #3c40c6;" onclick="setColor('#3c40c6')"></button>
+                    <button class="color-btn" style="background: #f53b57;" onclick="setColor('#f53b57')"></button>
+                </div>
+                <div class="actions">
+                    <button onclick="backToSelect()">もどる</button>
+                    <button id="send-btn" onclick="sendFish()">水槽へ放流する！</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>

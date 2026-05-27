@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Godot 4.x
+.godot/
+*.translation
+*.import
+*~
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
