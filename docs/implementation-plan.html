@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>デジタル水族館システム｜実装プラン</title>
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --surface: #0d1b2e;
+      --surface2: #112240;
+      --border: #1e3a5f;
+      --accent: #00b4d8;
+      --accent2: #48cae4;
+      --accent3: #90e0ef;
+      --godot: #6f42c1;
+      --python: #3572A5;
+      --web: #c9a800;
+      --integration: #2ea043;
+      --text: #ccd6f6;
+      --text-dim: #8892b0;
+      --danger: #ff6b6b;
+      --warning: #ffd166;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: linear-gradient(135deg, #0a0f1e 0%, #0d2137 50%, #0a1628 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 40px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(0,180,216,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(72,202,228,0.06) 0%, transparent 50%);
+    }
+    header .inner { position: relative; max-width: 1100px; margin: 0 auto; }
+    header .emoji { font-size: 56px; display: block; margin-bottom: 16px; }
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      color: var(--text-dim);
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+    header .badges {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge-godot  { background: rgba(111,66,193,0.25); color: #b388ff; border: 1px solid rgba(111,66,193,0.5); }
+    .badge-python { background: rgba(53,114,165,0.25); color: #82b1ff; border: 1px solid rgba(53,114,165,0.5); }
+    .badge-web    { background: rgba(201,168,0,0.2);  color: #ffe57f; border: 1px solid rgba(201,168,0,0.4); }
+    .badge-int    { background: rgba(46,160,67,0.2);  color: #69db7c; border: 1px solid rgba(46,160,67,0.4); }
+    .badge-info   { background: rgba(0,180,216,0.15); color: var(--accent2); border: 1px solid rgba(0,180,216,0.3); }
+
+    /* ─── Layout ─── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px; }
+
+    /* ─── TOC ─── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+    .toc h2 { font-size: 1rem; color: var(--accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .toc a:hover { color: var(--accent2); }
+
+    /* ─── Section ─── */
+    section { margin-bottom: 56px; }
+    section h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 28px 0 14px;
+    }
+
+    /* ─── Spec Table ─── */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .spec-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .spec-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .spec-card .value {
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 500;
+    }
+    .spec-card .value small {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      font-weight: 400;
+      margin-top: 3px;
+    }
+
+    /* ─── Architecture ─── */
+    .arch {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .arch-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: nowrap;
+      min-width: 600px;
+    }
+    .arch-box {
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+    .arch-box .title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .arch-box .sub   { font-size: 0.78rem; color: var(--text-dim); }
+    .arch-box-tablet { background: rgba(201,168,0,0.15); border: 2px solid var(--web); color: #ffe57f; }
+    .arch-box-server { background: rgba(53,114,165,0.15); border: 2px solid var(--python); color: #82b1ff; }
+    .arch-box-godot  { background: rgba(111,66,193,0.15); border: 2px solid var(--godot); color: #b388ff; }
+    .arch-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 12px;
+      color: var(--text-dim);
+      font-size: 0.72rem;
+      gap: 4px;
+    }
+    .arch-arrow .line {
+      height: 2px;
+      width: 60px;
+      background: var(--border);
+      position: relative;
+    }
+    .arch-arrow .line::after {
+      content: '▶';
+      position: absolute;
+      right: -10px;
+      top: -8px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    /* ─── Component Sections ─── */
+    .component-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .component-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── Issue List ─── */
+    .issue-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .issue-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color 0.2s;
+    }
+    .issue-item:hover { border-color: var(--accent); }
+    .issue-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      min-width: 28px;
+      padding-top: 2px;
+    }
+    .issue-content { flex: 1; }
+    .issue-title { font-weight: 600; color: #e0e7ff; font-size: 0.95rem; }
+    .issue-desc  { font-size: 0.82rem; color: var(--text-dim); margin-top: 4px; }
+
+    /* ─── Code Block ─── */
+    pre {
+      background: #020810;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin: 16px 0;
+    }
+    code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+    .token-comment { color: #546e7a; }
+    .token-key     { color: #80cbc4; }
+    .token-string  { color: #c3e88d; }
+    .token-number  { color: #f78c6c; }
+    .token-type    { color: var(--accent2); }
+
+    /* ─── Flow ─── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+    .flow-step:not(:last-child) .flow-line {
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .flow-num {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+    }
+    .flow-body {
+      padding: 8px 0 28px;
+    }
+    .flow-body strong { color: #fff; display: block; margin-bottom: 4px; }
+    .flow-body p { color: var(--text-dim); font-size: 0.9rem; }
+
+    /* ─── Param Table ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+    th {
+      text-align: left;
+      padding: 10px 16px;
+      background: var(--surface2);
+      color: var(--accent2);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    td code {
+      background: rgba(0,180,216,0.1);
+      color: var(--accent2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+
+    /* ─── Alert ─── */
+    .alert {
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .alert-warning { background: rgba(255,209,102,0.1); border: 1px solid rgba(255,209,102,0.3); color: var(--warning); }
+    .alert-info    { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent2); }
+    .alert-icon    { flex-shrink: 0; }
+
+    /* ─── Dir Tree ─── */
+    .dir-tree {
+      background: #020810;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85rem;
+      line-height: 1.9;
+    }
+    .dir-tree .dir  { color: var(--accent2); }
+    .dir-tree .file { color: var(--text-dim); }
+    .dir-tree .note { color: #546e7a; }
+
+    /* ─── Footer ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ HEADER -->
+<header>
+  <div class="inner">
+    <span class="emoji">🐠</span>
+    <h1>イベント用デジタル水族館システム</h1>
+    <p>Godot 4.6 巨大スクリーン × Python WebSocket サーバー × タブレット塗り絵 Web アプリ</p>
+    <div class="badges">
+      <span class="badge badge-godot">Godot 4.6</span>
+      <span class="badge badge-python">Python / FastAPI</span>
+      <span class="badge badge-web">HTML5 / JavaScript</span>
+      <span class="badge badge-info">WebSocket</span>
+      <span class="badge badge-info">RTX4090</span>
+      <span class="badge badge-info">8640×3840</span>
+      <span class="badge badge-int">デモ用</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════ CONTAINER -->
+<div class="container">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <h2>📋 目次</h2>
+    <ol>
+      <li><a href="#overview">システム概要・確定仕様</a></li>
+      <li><a href="#architecture">アーキテクチャ図</a></li>
+      <li><a href="#filestructure">ファイル構成</a></li>
+      <li><a href="#godot">Godot 4.6 実装（巨大スクリーン）</a></li>
+      <li><a href="#python">Python FastAPI 実装（サーバー）</a></li>
+      <li><a href="#webapp">Web アプリ実装（タブレット）</a></li>
+      <li><a href="#flow">起動・統合フロー</a></li>
+      <li><a href="#issues">Issue 一覧（GitHub）</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══ 1. OVERVIEW -->
+  <section id="overview">
+    <h2>🎯 システム概要・確定仕様</h2>
+
+    <h3>インフラ</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="label">モニター構成</div>
+        <div class="value">4K縦モニター × 4枚<small>8640 × 3840 px（横長巨大スクリーン）</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">PC スペック</div>
+        <div class="value">RTX4090 推奨<small>DisplayPort × 4出力（MST ハブ不要）</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">Godot バージョン</div>
+        <div class="value">Godot 4.6<small>WebSocketPeer 安定版</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">ネットワーク</div>
+        <div class="value">PC ホットスポット<small>開発時 / 本番は Wi-Fi ルーター（5GHz）</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">タブレット</div>
+        <div class="value">Android × 4〜6台<small>Chrome ブラウザで動作</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">サーバー</div>
+        <div class="value">FastAPI 1本で完結<small>WebSocket + 静的ファイル配信を統合</small></div>
+      </div>
+    </div>
+
+    <h3>水槽・魚</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="label">最大同時表示</div>
+        <div class="value">300匹<small>超えたら最古の魚が泡パーティクルで消滅</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">デフォルト魚</div>
+        <div class="value">起動時 20〜30匹<small>内蔵単色 PNG。参加者の魚と混在</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">群れアルゴリズム</div>
+        <div class="value">Boids + Quadtree<small>Separation / Alignment / Cohesion</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">ふらつき</div>
+        <div class="value">FastNoiseLite（Perlin Noise）<small>個体ごとの固有 ID で異なる位相</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">泳ぎ速度</div>
+        <div class="value">80〜150 px/秒<small>個体差 ±20%。F1 デバッグ UI で調整</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">方向転換</div>
+        <div class="value">flip_v + lerp_angle<small>なめらかな左右反転・回転補間</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">体の揺れ</div>
+        <div class="value">Vertex Shader<small>sin 波・尾びれほど振幅大</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">奥行き表現</div>
+        <div class="value">depth 値（0.0〜1.0）<small>スケール / 色 / z_index を制御</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">登場演出</div>
+        <div class="value">上から落下<small>着水時に水しぶきパーティクル</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">消滅演出</div>
+        <div class="value">泡パーティクル<small>CPUParticles2D で上方向に浮かぶ泡</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">背景 Shader</div>
+        <div class="value">Caustics（光の揺らぎ）<small>深海ブルー + 水面からの揺れる光</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">画面 UI</div>
+        <div class="value">魚数カウンター + イベント名<small>半透明帯。F2 で非表示切り替え</small></div>
+      </div>
+    </div>
+
+    <h3>タブレット（塗り絵アプリ）</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="label">UI レイアウト</div>
+        <div class="value">縦型 3ステップ<small>選択 → 塗り絵 → 放流</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">線画テンプレート</div>
+        <div class="value">8種類程度<small>手書きスキャン or AI生成・事前二値化</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">塗り絵方式</div>
+        <div class="value">バケツ塗り（Flood Fill）<small>完全一致・二値化済み線画前提</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">カラーパレット</div>
+        <div class="value">12色 + リセットボタン<small>明るめ・子ども向け配色</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">送信 PNG サイズ</div>
+        <div class="value">1024 × 1024 px<small>Base64 エンコードで WebSocket 送信</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">放流後演出</div>
+        <div class="value">魚が右へ泳いで消える<small>→ テキスト表示 → 自動リセット</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">1セッション</div>
+        <div class="value">1匹のみ<small>公平な順番管理</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">効果音</div>
+        <div class="value">放流時に着水音<small>Web Audio API</small></div>
+      </div>
+    </div>
+
+    <h3>通信・サーバー</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="label">放流レート制限</div>
+        <div class="value">サーバー側キュー<small>0.5秒間隔でブロードキャスト</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">切断時の挙動</div>
+        <div class="value">自動再接続<small>3秒リトライ（タブレット・Godot 両方）</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">デバッグ UI</div>
+        <div class="value">F1 キーで ON/OFF<small>Boids 全パラメータをリアルタイム調整</small></div>
+      </div>
+      <div class="spec-card">
+        <div class="label">環境音</div>
+        <div class="value">水のループ再生<small>Godot AudioStreamPlayer（OGG形式）</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 2. ARCHITECTURE -->
+  <section id="architecture">
+    <h2>🏗️ アーキテクチャ</h2>
+
+    <div class="arch">
+      <div class="arch-diagram">
+        <div class="arch-box arch-box-tablet">
+          <div class="title">🎨 タブレット × 4〜6台</div>
+          <div class="sub">Android Chrome<br>HTML5 塗り絵アプリ</div>
+        </div>
+        <div class="arch-arrow">
+          <div class="line"></div>
+          <span>PNG Base64<br>WebSocket</span>
+        </div>
+        <div class="arch-box arch-box-server">
+          <div class="title">🐍 Python サーバー</div>
+          <div class="sub">FastAPI + uvicorn<br>WebSocket / 静的配信</div>
+        </div>
+        <div class="arch-arrow">
+          <div class="line"></div>
+          <span>Broadcast<br>WebSocket</span>
+        </div>
+        <div class="arch-box arch-box-godot">
+          <div class="title">🖥️ Godot 4.6</div>
+          <div class="sub">巨大スクリーン<br>8640 × 3840</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>通信フロー</h3>
+    <pre><code><span class="token-comment"># 1. タブレット → サーバー（魚の放流）</span>
+<span class="token-key">WebSocket</span> ws://{PC_IP}:8000/ws
+<span class="token-type">送信:</span> {
+  <span class="token-key">"type"</span>:      <span class="token-string">"fish"</span>,
+  <span class="token-key">"image"</span>:     <span class="token-string">"data:image/png;base64,xxxx"</span>,
+  <span class="token-key">"timestamp"</span>: <span class="token-number">1234567890</span>
+}
+
+<span class="token-comment"># 2. Godot → サーバー（接続種別の宣言）</span>
+<span class="token-type">送信:</span> { <span class="token-key">"type"</span>: <span class="token-string">"godot"</span> }
+
+<span class="token-comment"># 3. サーバー → Godot（0.5秒間隔キュー経由）</span>
+<span class="token-type">ブロードキャスト:</span> 同じ JSON をそのまま転送</code></pre>
+
+    <h3>Boids パラメータ（初期値）</h3>
+    <table>
+      <tr><th>パラメータ</th><th>初期値</th><th>調整方法</th></tr>
+      <tr><td>基準速度</td><td><code>120 px/秒</code></td><td>F1 デバッグ UI スライダー</td></tr>
+      <tr><td>個体速度差</td><td><code>±20%</code></td><td>生成時ランダム固定</td></tr>
+      <tr><td>Separation 半径</td><td><code>80 px</code></td><td>F1 デバッグ UI スライダー</td></tr>
+      <tr><td>Alignment 半径</td><td><code>150 px</code></td><td>F1 デバッグ UI スライダー</td></tr>
+      <tr><td>Cohesion 半径</td><td><code>200 px</code></td><td>F1 デバッグ UI スライダー</td></tr>
+      <tr><td>壁反発距離</td><td><code>300 px</code></td><td>F1 デバッグ UI スライダー</td></tr>
+      <tr><td>Wander Strength</td><td><code>30.0</code></td><td>F1 デバッグ UI スライダー</td></tr>
+      <tr><td>体の揺れ強度</td><td><code>0.03</code></td><td>F1 デバッグ UI スライダー</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══ 3. FILE STRUCTURE -->
+  <section id="filestructure">
+    <h2>📁 ファイル構成</h2>
+
+    <div class="dir-tree">
+<span class="dir">digital-aquarium/</span>
+├── <span class="dir">docs/</span>
+│   └── <span class="file">implementation-plan.html</span>   <span class="note"># このファイル</span>
+│
+├── <span class="dir">server/</span>                           <span class="note"># Python FastAPI サーバー</span>
+│   ├── <span class="file">main.py</span>                        <span class="note"># FastAPI アプリ本体</span>
+│   ├── <span class="file">requirements.txt</span>
+│   ├── <span class="dir">static/</span>
+│   │   ├── <span class="dir">fish/</span>                      <span class="note"># 線画 PNG（二値化済み）</span>
+│   │   │   ├── <span class="file">fish_01.png</span>
+│   │   │   ├── <span class="file">fish_02.png</span>
+│   │   │   └── <span class="file">...</span>
+│   │   └── <span class="dir">thumbnails/</span>                <span class="note"># サムネイル（256×256px）</span>
+│   └── <span class="dir">tools/</span>
+│       └── <span class="file">binarize.py</span>                <span class="note"># 線画二値化スクリプト</span>
+│
+├── <span class="dir">webapp/</span>                           <span class="note"># タブレット塗り絵アプリ</span>
+│   ├── <span class="file">index.html</span>
+│   ├── <span class="file">style.css</span>
+│   └── <span class="file">main.js</span>
+│
+└── <span class="dir">godot/</span>                            <span class="note"># Godot 4.6 プロジェクト</span>
+    ├── <span class="file">project.godot</span>
+    ├── <span class="dir">scenes/</span>
+    │   ├── <span class="file">AquariumScene.tscn</span>         <span class="note"># メインシーン</span>
+    │   ├── <span class="file">Fish.tscn</span>                   <span class="note"># 魚プレハブ</span>
+    │   └── <span class="file">DebugUI.tscn</span>
+    ├── <span class="dir">scripts/</span>
+    │   ├── <span class="file">FishManager.gd</span>             <span class="note"># 300匹管理・FIFO</span>
+    │   ├── <span class="file">Fish.gd</span>                     <span class="note"># Boids + Perlin Noise</span>
+    │   ├── <span class="file">Quadtree.gd</span>                <span class="note"># 空間分割</span>
+    │   ├── <span class="file">WebSocketClient.gd</span>         <span class="note"># 通信・自動再接続</span>
+    │   ├── <span class="file">DebugUI.gd</span>                 <span class="note"># F1 パラメータ調整</span>
+    │   └── <span class="file">HUD.gd</span>                      <span class="note"># 魚数カウンター</span>
+    ├── <span class="dir">shaders/</span>
+    │   ├── <span class="file">aquarium_bg.gdshader</span>       <span class="note"># Caustics 背景</span>
+    │   └── <span class="file">fish_body.gdshader</span>         <span class="note"># 体の揺れ Vertex Shader</span>
+    ├── <span class="dir">fish/</span>
+    │   └── <span class="dir">defaults/</span>                   <span class="note"># 起動時デフォルト魚 PNG</span>
+    └── <span class="dir">audio/</span>
+        ├── <span class="file">ambient_water.ogg</span>
+        └── <span class="file">splash.ogg</span>
+    </div>
+  </section>
+
+  <!-- ═══ 4. GODOT -->
+  <section id="godot">
+    <h2><span style="color:var(--godot)">■</span> Godot 4.6 実装（巨大スクリーン）</h2>
+
+    <h3>シーンツリー構成</h3>
+    <pre><code><span class="token-type">AquariumScene（Node2D）</span>
+├── <span class="token-key">Background（ColorRect）</span>       <span class="token-comment"># Caustics Shader</span>
+├── <span class="token-key">FishLayer（Node2D）</span>           <span class="token-comment"># MultiMeshInstance2D</span>
+│   └── <span class="token-key">FishManager（Node）</span>       <span class="token-comment"># FishManager.gd</span>
+├── <span class="token-key">ParticleLayer（Node2D）</span>       <span class="token-comment"># 着水・泡パーティクル</span>
+├── <span class="token-key">HUD（CanvasLayer）</span>            <span class="token-comment"># 魚数・イベント名</span>
+├── <span class="token-key">DebugUI（CanvasLayer）</span>        <span class="token-comment"># F1 Boids スライダー</span>
+├── <span class="token-key">WebSocketClient（Node）</span>       <span class="token-comment"># 通信管理</span>
+└── <span class="token-key">AudioManager（Node）</span>          <span class="token-comment"># 環境音・SE</span></code></pre>
+
+    <h3>主要スクリプトの責務</h3>
+    <table>
+      <tr><th>スクリプト</th><th>責務</th></tr>
+      <tr><td><code>FishManager.gd</code></td><td>300匹 FIFO 管理・生成・消滅・Boids 一括更新</td></tr>
+      <tr><td><code>Fish.gd</code></td><td>個体の Boids 演算・Perlin Noise・方向転換</td></tr>
+      <tr><td><code>Quadtree.gd</code></td><td>空間分割・近傍 N 匹の高速検索</td></tr>
+      <tr><td><code>WebSocketClient.gd</code></td><td>サーバー接続・Base64 PNG → ImageTexture 変換</td></tr>
+      <tr><td><code>DebugUI.gd</code></td><td>F1 トグル・スライダー値を FishManager へ反映</td></tr>
+      <tr><td><code>HUD.gd</code></td><td>魚数カウンターのリアルタイム更新</td></tr>
+    </table>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">💡</span>
+      <span>MultiMeshInstance2D を使用することで、300匹の描画呼び出しを 1回にまとめる。各魚のテクスチャが異なるため、テクスチャ配列（TextureArray）を Shader で管理する。</span>
+    </div>
+
+    <h3>PNG Base64 → Texture2D 変換</h3>
+    <pre><code><span class="token-comment"># WebSocketClient.gd</span>
+<span class="token-key">func</span> <span class="token-type">create_texture_from_base64</span>(data_url: String) -> ImageTexture:
+    <span class="token-comment"># "data:image/png;base64," プレフィックスを除去</span>
+    var base64_str = data_url.split(<span class="token-string">","</span>)[1]
+    var bytes = Marshalls.base64_to_raw(base64_str)
+    var image = Image.new()
+    image.load_png_from_buffer(bytes)
+    return ImageTexture.create_from_image(image)</code></pre>
+  </section>
+
+  <!-- ═══ 5. PYTHON -->
+  <section id="python">
+    <h2><span style="color:var(--python)">■</span> Python FastAPI 実装（サーバー）</h2>
+
+    <h3>エンドポイント設計</h3>
+    <table>
+      <tr><th>パス</th><th>メソッド</th><th>説明</th></tr>
+      <tr><td><code>/ws</code></td><td>WebSocket</td><td>タブレット・Godot の接続口。type フィールドで分類</td></tr>
+      <tr><td><code>/</code></td><td>GET</td><td>index.html（タブレット塗り絵アプリ）を配信</td></tr>
+      <tr><td><code>/static/fish/{name}</code></td><td>GET</td><td>二値化済み線画 PNG を配信</td></tr>
+      <tr><td><code>/static/thumbnails/{name}</code></td><td>GET</td><td>サムネイル画像を配信</td></tr>
+    </table>
+
+    <h3>接続管理の設計</h3>
+    <pre><code><span class="token-comment"># 接続種別で管理を分離</span>
+<span class="token-key">tablet_connections</span>: set[WebSocket] = set()  <span class="token-comment"># 送信元</span>
+<span class="token-key">godot_connections</span>:  set[WebSocket] = set()  <span class="token-comment"># 受信先</span>
+<span class="token-key">fish_queue</span>: asyncio.Queue = asyncio.Queue(maxsize=<span class="token-number">50</span>)
+
+<span class="token-comment"># type フィールドで接続種別を判定</span>
+<span class="token-key">if</span> data[<span class="token-string">"type"</span>] == <span class="token-string">"godot"</span>:
+    godot_connections.add(websocket)
+<span class="token-key">elif</span> data[<span class="token-string">"type"</span>] == <span class="token-string">"fish"</span>:
+    await fish_queue.put(data)   <span class="token-comment"># キューに積む</span></code></pre>
+
+    <h3>放流キュー（0.5秒間隔）</h3>
+    <pre><code><span class="token-key">async def</span> <span class="token-type">queue_worker</span>():
+    <span class="token-key">while True</span>:
+        fish_data = <span class="token-key">await</span> fish_queue.get()
+        <span class="token-key">for</span> ws <span class="token-key">in</span> list(godot_connections):
+            <span class="token-key">try</span>:
+                <span class="token-key">await</span> ws.send_json(fish_data)
+            <span class="token-key">except</span>:
+                godot_connections.discard(ws)
+        <span class="token-key">await</span> asyncio.sleep(<span class="token-number">0.5</span>)   <span class="token-comment"># 0.5秒間隔</span></code></pre>
+
+    <div class="alert alert-warning">
+      <span class="alert-icon">⚠️</span>
+      <span>1024×1024 PNG の Base64 は約 1.4MB。LAN 内（5GHz）なら問題ないが、キューの maxsize=50 で過負荷を防ぐ。</span>
+    </div>
+  </section>
+
+  <!-- ═══ 6. WEBAPP -->
+  <section id="webapp">
+    <h2><span style="color:var(--web)">■</span> Web アプリ実装（タブレット）</h2>
+
+    <h3>画面遷移フロー</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <strong>線画選択画面</strong>
+          <p>8種類の魚サムネイルを 2列グリッドで表示。タップで塗り絵画面へ遷移。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <strong>塗り絵画面</strong>
+          <p>Canvas に線画を表示。12色パレットをタップして選色 → 魚の領域をタップで Flood Fill。リセットボタンで初期化。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <strong>放流ボタン</strong>
+          <p>Canvas を 1024×1024px の PNG として書き出し、Base64 に変換して WebSocket 送信。着水音を再生。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <strong>放流後アニメーション</strong>
+          <p>魚が右方向に泳いで画面外へ消える CSS アニメーション（1〜2秒）。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <strong>自動リセット</strong>
+          <p>「大きな水槽に放流しました！」テキストを 2秒表示後、自動的に①の線画選択画面へ戻る。</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Flood Fill アルゴリズム</h3>
+    <pre><code><span class="token-comment">// 完全一致 Flood Fill（二値化済み線画前提）</span>
+<span class="token-key">function</span> <span class="token-type">floodFill</span>(ctx, x, y, fillColor) {
+  const imageData = ctx.getImageData(<span class="token-number">0</span>, <span class="token-number">0</span>, canvas.width, canvas.height);
+  const data = imageData.data;
+  const targetColor = getPixelColor(data, x, y);
+
+  <span class="token-comment">// 黒ピクセル（境界線）またはすでに塗られていたら終了</span>
+  <span class="token-key">if</span> (isBlack(targetColor) || isSameColor(targetColor, fillColor)) <span class="token-key">return</span>;
+
+  <span class="token-comment">// スタックベース BFS で塗りつぶし（再帰を避けてスタックオーバーフロー防止）</span>
+  const stack = [[x, y]];
+  <span class="token-key">while</span> (stack.length > <span class="token-number">0</span>) {
+    const [cx, cy] = stack.pop();
+    <span class="token-key">if</span> (!isSameColor(getPixelColor(data, cx, cy), targetColor)) <span class="token-key">continue</span>;
+    setPixelColor(data, cx, cy, fillColor);
+    stack.push([cx+<span class="token-number">1</span>,cy],[cx-<span class="token-number">1</span>,cy],[cx,cy+<span class="token-number">1</span>],[cx,cy-<span class="token-number">1</span>]);
+  }
+  ctx.putImageData(imageData, <span class="token-number">0</span>, <span class="token-number">0</span>);
+}</code></pre>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">💡</span>
+      <span>線画は事前に Python（Pillow）で二値化（白 or 黒のみ）しておくことで、アンチエイリアスによる漏れが発生せず、完全一致 Flood Fill が確実に動作する。</span>
+    </div>
+  </section>
+
+  <!-- ═══ 7. FLOW -->
+  <section id="flow">
+    <h2>🚀 起動・統合フロー</h2>
+
+    <h3>起動順序</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <strong>PC の固定 IP を確認 / ホットスポットを起動</strong>
+          <p><code>ipconfig</code> で IP アドレスを確認。タブレットの WebSocket URL に使用。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <strong>Python サーバーを起動</strong>
+          <p><code>uvicorn main:app --host 0.0.0.0 --port 8000</code></p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <strong>Godot アプリを起動</strong>
+          <p>WebSocket 接続確認。デバッグコンソールに「Connected to server」が表示されれば OK。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-line"></div>
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <strong>タブレットで http://{PC_IP}:8000 を開く</strong>
+          <p>Chrome で URL を入力。接続インジケーターが緑になることを確認。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <strong>塗り絵 → 放流 → 巨大スクリーンに魚出現を確認</strong>
+          <p>E2E の動作確認。F1 でデバッグ UI を開き Boids パラメータを調整。</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Windows Firewall 設定</h3>
+    <pre><code><span class="token-comment"># 管理者権限の PowerShell で実行</span>
+New-NetFirewallRule -DisplayName <span class="token-string">"Digital Aquarium"</span> `
+  -Direction Inbound -Protocol TCP -LocalPort <span class="token-number">8000</span> -Action Allow</code></pre>
+  </section>
+
+  <!-- ═══ 8. ISSUES -->
+  <section id="issues">
+    <h2>📌 Issue 一覧（GitHub）</h2>
+
+    <h3><span class="badge badge-godot">Godot</span> 巨大スクリーン（#1〜#12）</h3>
+    <ul class="issue-list">
+      <li class="issue-item"><span class="issue-num">#1</span><div class="issue-content"><div class="issue-title">プロジェクト初期設定・巨大ウィンドウ（8640×3840）</div><div class="issue-desc">project.godot の解像度設定・フルスクリーン設定・シーンツリー構成</div></div></li>
+      <li class="issue-item"><span class="issue-num">#2</span><div class="issue-content"><div class="issue-title">水槽背景 Shader（Caustics・光の揺らぎ）</div><div class="issue-desc">深海ブルーグラデーション + TIME アニメーションの Caustics 効果</div></div></li>
+      <li class="issue-item"><span class="issue-num">#3</span><div class="issue-content"><div class="issue-title">Boids + Quadtree による 300匹群れシミュレーション</div><div class="issue-desc">Separation / Alignment / Cohesion + MultiMeshInstance2D 一括描画</div></div></li>
+      <li class="issue-item"><span class="issue-num">#4</span><div class="issue-content"><div class="issue-title">Perlin Noise ふらつき・方向転換・体の揺れ</div><div class="issue-desc">FastNoiseLite 個体差 + lerp_angle なめらか回転 + Vertex Shader 揺れ</div></div></li>
+      <li class="issue-item"><span class="issue-num">#5</span><div class="issue-content"><div class="issue-title">奥行き（depth）・サイズ・色の制御</div><div class="issue-desc">depth 値で scale / modulate / z_index を制御。2D に立体感を演出</div></div></li>
+      <li class="issue-item"><span class="issue-num">#6</span><div class="issue-content"><div class="issue-title">魚の登場演出（上から落下 + 着水パーティクル）</div><div class="issue-desc">Tween 落下アニメーション + CPUParticles2D 水しぶき</div></div></li>
+      <li class="issue-item"><span class="issue-num">#7</span><div class="issue-content"><div class="issue-title">魚の消滅演出（泡パーティクル）</div><div class="issue-desc">300匹上限到達時に最古の魚が泡パーティクルとともに消滅</div></div></li>
+      <li class="issue-item"><span class="issue-num">#8</span><div class="issue-content"><div class="issue-title">WebSocketClient.gd（PNG 受信・Base64→Texture2D・自動再接続）</div><div class="issue-desc">WebSocketPeer 実装 + Base64 → ImageTexture 変換 + 3秒リトライ</div></div></li>
+      <li class="issue-item"><span class="issue-num">#9</span><div class="issue-content"><div class="issue-title">デフォルト魚（起動時 20〜30匹を内蔵）</div><div class="issue-desc">内蔵単色 PNG から起動時に自動生成。FIFO キューに組み込む</div></div></li>
+      <li class="issue-item"><span class="issue-num">#10</span><div class="issue-content"><div class="issue-title">デバッグ UI（F1 ON/OFF・Boids パラメータスライダー）</div><div class="issue-desc">全 Boids パラメータをリアルタイム調整。数値ラベル付き HSlider</div></div></li>
+      <li class="issue-item"><span class="issue-num">#11</span><div class="issue-content"><div class="issue-title">画面 UI（魚数カウンター・イベント名）</div><div class="issue-desc">CanvasLayer に半透明帯。F2 で非表示切り替え</div></div></li>
+      <li class="issue-item"><span class="issue-num">#12</span><div class="issue-content"><div class="issue-title">環境音（水のループ再生）</div><div class="issue-desc">AudioStreamPlayer に水音 OGG をループ。着水 SE の管理</div></div></li>
+    </ul>
+
+    <h3 style="margin-top:28px"><span class="badge badge-python">Python</span> FastAPI サーバー（#13〜#15）</h3>
+    <ul class="issue-list">
+      <li class="issue-item"><span class="issue-num">#13</span><div class="issue-content"><div class="issue-title">FastAPI 基本構成（WebSocket + 静的ファイル配信）</div><div class="issue-desc">/ws エンドポイント + StaticFiles + index.html 配信を 1本で</div></div></li>
+      <li class="issue-item"><span class="issue-num">#14</span><div class="issue-content"><div class="issue-title">接続管理・ブロードキャスト（タブレット / Godot）</div><div class="issue-desc">type フィールドで接続種別を分類。ConnectionManager クラス実装</div></div></li>
+      <li class="issue-item"><span class="issue-num">#15</span><div class="issue-content"><div class="issue-title">放流キュー（0.5秒間隔ブロードキャスト）</div><div class="issue-desc">asyncio.Queue + バックグラウンドワーカー。maxsize=50 でオーバーフロー防止</div></div></li>
+    </ul>
+
+    <h3 style="margin-top:28px"><span class="badge badge-web">Web</span> タブレットアプリ（#16〜#19）</h3>
+    <ul class="issue-list">
+      <li class="issue-item"><span class="issue-num">#16</span><div class="issue-content"><div class="issue-title">基本 HTML/CSS レイアウト（縦型3ステップ UI）</div><div class="issue-desc">Android Chrome 最適化。タッチターゲット 44px 以上。接続インジケーター</div></div></li>
+      <li class="issue-item"><span class="issue-num">#17</span><div class="issue-content"><div class="issue-title">Canvas 塗り絵（Flood Fill・12色パレット・リセット）</div><div class="issue-desc">スタックベース BFS Flood Fill。完全一致（二値化済み線画前提）</div></div></li>
+      <li class="issue-item"><span class="issue-num">#18</span><div class="issue-content"><div class="issue-title">PNG Base64 生成・WebSocket 送信・自動再接続</div><div class="issue-desc">1024×1024 リサイズ → toBlob() → Base64。3秒リトライ再接続</div></div></li>
+      <li class="issue-item"><span class="issue-num">#19</span><div class="issue-content"><div class="issue-title">放流後演出（魚が泳いで消える → テキスト → 自動リセット）</div><div class="issue-desc">CSS アニメーション → 2秒テキスト表示 → 線画選択へ自動遷移。着水音</div></div></li>
+    </ul>
+
+    <h3 style="margin-top:28px"><span class="badge badge-int">統合</span> 準備・テスト（#20〜#21）</h3>
+    <ul class="issue-list">
+      <li class="issue-item"><span class="issue-num">#20</span><div class="issue-content"><div class="issue-title">線画 PNG の作成・二値化処理</div><div class="issue-desc">手書きスキャン or AI生成 → Pillow で二値化 → /static/fish/ に配置</div></div></li>
+      <li class="issue-item"><span class="issue-num">#21</span><div class="issue-content"><div class="issue-title">全体起動手順・接続確認・テスト</div><div class="issue-desc">README 整備。Firewall 設定。300匹上限・同時放流の動作確認</div></div></li>
+    </ul>
+  </section>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ FOOTER -->
+<footer>
+  <p>
+    <a href="https://github.com/dreamthread-dev/digital-aquarium" target="_blank">
+      🐙 dreamthread-dev/digital-aquarium
+    </a>
+    &nbsp;·&nbsp; Godot 4.6 / Python FastAPI / HTML5
+    &nbsp;·&nbsp; イベント用デジタル水族館システム
+  </p>
+</footer>
+
+</body>
+</html>
