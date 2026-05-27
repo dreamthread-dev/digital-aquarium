@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>デジタル水族館 塗り絵アプリ</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🐠 デジタル水族館 塗り絵</h1>
+            <div id="connection-status" class="connection-status" data-state="connecting" aria-live="polite">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="connection-label">接続中</span>
+            </div>
         </header>
         
         <main>
@@ -25,7 +30,7 @@
             <section id="step-paint" class="step-section hidden">
                 <h2>ステップ 2: 色をぬる</h2>
                 <div class="canvas-container">
-                    <canvas id="paint-canvas" width="512" height="512"></canvas>
+                    <canvas id="paint-canvas" width="1024" height="1024"></canvas>
                 </div>
                 <div class="palette">
                     <button class="color-btn" style="background: #ff5e57;" onclick="setColor('#ff5e57')"></button>
@@ -39,6 +44,7 @@
                     <button onclick="backToSelect()">もどる</button>
                     <button id="send-btn" onclick="sendFish()">水槽へ放流する！</button>
                 </div>
+                <p id="send-status" class="send-status" role="status" aria-live="polite"></p>
             </section>
         </main>
     </div>

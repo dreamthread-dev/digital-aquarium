@@ -21,9 +21,57 @@ body {
     max-width: 600px;
     background-color: var(--card-color);
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     text-align: center;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.connection-status {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    min-width: 108px;
+    padding: 8px 12px;
+    border: 1px solid #475569;
+    border-radius: 999px;
+    background-color: #0f172a;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+}
+
+.connection-status[data-state="connected"] .status-dot {
+    background-color: #22c55e;
+}
+
+.connection-status[data-state="reconnecting"] .status-dot {
+    background-color: #f59e0b;
+}
+
+.connection-status[data-state="disconnected"] .status-dot {
+    background-color: #ef4444;
 }
 
 .hidden {
@@ -86,6 +134,7 @@ body {
 .actions {
     display: flex;
     justify-content: space-between;
+    gap: 12px;
     margin-top: 20px;
 }
 
@@ -99,8 +148,43 @@ button {
     color: white;
 }
 
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 #send-btn {
     background-color: var(--accent-color);
     color: var(--bg-color);
     font-weight: bold;
+}
+
+.send-status {
+    min-height: 1.3rem;
+    margin: 14px 0 0;
+    font-weight: 700;
+}
+
+.send-status[data-state="pending"] {
+    color: #facc15;
+}
+
+.send-status[data-state="success"] {
+    color: #86efac;
+}
+
+.send-status[data-state="error"] {
+    color: #fca5a5;
+}
+
+@media (max-width: 520px) {
+    header,
+    .actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .actions button {
+        width: 100%;
+    }
 }
