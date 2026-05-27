@@ -38,6 +38,15 @@ func _ready() -> void:
 	
 	# 起動時のデフォルト魚の生成
 	_spawn_initial_fishes()
+	
+	# WebSocket 接続のハンドリング
+	var ws_node := get_node_or_null("../WebSocketClient")
+	if ws_node:
+		var ws_client := ws_node as WebSocketClient
+		if ws_client:
+			ws_client.fish_received.connect(_on_fish_received)
+			logger_info("Connected to WebSocketClient fish_received signal.")
+	
 	logger_info("FishManager ready. Spawned initial fishes.")
 
 func _load_default_textures() -> void:
@@ -127,6 +136,10 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 		var oldest_fish := oldest as Fish
 		if is_instance_valid(oldest_fish):
 			oldest_fish.start_dying()
+
+func _on_fish_received(texture: Texture2D) -> void:
+	spawn_fish(texture, Vector2.ZERO, -1.0, true)
+	logger_info("Spawned a new fish from WebSocket connection.")
 
 # 各魚個体へBoidsパラメータを一括同期させる
 func _sync_fish_params(fish: Fish) -> void:
