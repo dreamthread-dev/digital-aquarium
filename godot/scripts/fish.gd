@@ -3,12 +3,30 @@ extends Node2D
 
 const HALF_PI = PI / 2.0
 
+# 状態の定義
+enum State {
+	STATE_SPAWNING,
+	STATE_ACTIVE,
+	STATE_DYING
+}
+
 # 静的型付け必須ルールを適用
 var velocity: Vector2 = Vector2.RIGHT
 var speed: float = 120.0
 var max_speed: float = 180.0
 var depth: float = 0.0
 var noise_offset: float = 0.0
+
+# 現在の状態
+var current_state: State = State.STATE_ACTIVE
+
+# 登場演出パラメータ
+var gravity: float = 800.0
+var water_level: float = 400.0
+
+# 消滅演出パラメータ
+var fade_duration: float = 1.5
+var fade_timer: float = 0.0
 
 # Boids パラメータ (FishManager から動的に上書き可能)
 var separation_radius: float = 80.0
@@ -30,7 +48,14 @@ var wall_margin: float = 300.0
 # ふらつき用ノイズ (FishManager から渡される)
 var noise_gen: FastNoiseLite = null
 
+# パーティクルシーンのプリロード
+var splash_scene: PackedScene = preload("res://scenes/splash_particles.tscn")
+var bubble_scene: PackedScene = preload("res://scenes/bubble_particles.tscn")
+
 func _ready() -> void:
+	# 通常遊泳時は FishManager が一括更新するため、自身の _process は無効化しておく
+	set_process(false)
+	
 	# 個体ごとの固有のノイズ位相ずれ
 	noise_offset = randf_range(0.0, 10000.0)
 	
@@ -60,6 +85,44 @@ func set_depth(p_depth: float) -> void:
 
 # 位置と回転の更新 (FishManagerが一括で呼び出すため _process は不使用)
 func update_movement(delta: float, neighbors: Array[Node2D], screen_size: Vector2) -> void:
+	match current_state:
+		State.STATE_SPAWNING:
+			_update_spawning(delta)
+		State.STATE_ACTIVE:
+			_update_active(delta, neighbors, screen_size)
+		State.STATE_DYING:
+			_update_dying(delta)
+
+# 登場演出（落下）の更新
+func _update_spawning(delta: float) -> void:
+	# 下方向へ重力落下
+	velocity.y += gravity * delta
+	if velocity.y > 600.0:
+		velocity.y = 600.0
+	
+	position += velocity * delta
+	
+	# 落下方向（真下）に向く
+	var target_angle: float = velocity.angle()
+	rotation = lerp_angle(rotation, target_angle, 10.0 * delta)
+	
+	if sprite:
+		sprite.flip_v = false
+	
+	# 水面到達判定
+	if position.y >= water_level:
+		position.y = water_level
+		_spawn_splash()
+		current_state = State.STATE_ACTIVE
+		
+		# 水中に入った直後はランダムな斜め上方向に泳ぎ出す
+		var swim_angle: float = randf_range(-PI * 0.1, -PI * 0.4)
+		if randf() > 0.5:
+			swim_angle = randf_range(-PI * 0.9, -PI * 0.6)
+		velocity = Vector2.from_angle(swim_angle) * speed
+
+# 通常遊泳の更新
+func _update_active(delta: float, neighbors: Array[Node2D], screen_size: Vector2) -> void:
 	var force: Vector2 = Vector2.ZERO
 	
 	# Boidsの計算
@@ -90,13 +153,64 @@ func update_movement(delta: float, neighbors: Array[Node2D], screen_size: Vector
 	position += velocity * delta
 	
 	# 左右反転 (flip_v) の制御
-	# 進む方向に応じてスプライトの上下反転を行い、魚が逆さまになるのを防ぐ
 	if sprite:
 		var normalized_angle: float = fposmod(rotation, TAU)
 		if normalized_angle > HALF_PI and normalized_angle < PI + HALF_PI:
 			sprite.flip_v = true
 		else:
 			sprite.flip_v = false
+
+# 消滅演出の更新
+func _update_dying(delta: float) -> void:
+	# 徐々に減速してゆっくり上昇
+	velocity = velocity.lerp(Vector2.UP * 20.0, 3.0 * delta)
+	position += velocity * delta
+	
+	fade_timer += delta
+	var progress: float = clampf(fade_timer / fade_duration, 0.0, 1.0)
+	
+	# フェードアウト
+	var deep_color: Color = Color(0.08, 0.20, 0.38, 1.0)
+	var base_color: Color = Color.WHITE.lerp(deep_color, depth)
+	modulate = Color(base_color.r, base_color.g, base_color.b, 1.0 - progress)
+	
+	if progress >= 1.0:
+		queue_free()
+
+func _process(delta: float) -> void:
+	if current_state == State.STATE_DYING:
+		_update_dying(delta)
+
+# 消滅演出の開始
+func start_dying() -> void:
+	if current_state == State.STATE_DYING:
+		return
+	current_state = State.STATE_DYING
+	fade_timer = 0.0
+	set_process(true) # 消滅アニメーション更新を有効化
+	_spawn_bubbles()
+
+# 水しぶき生成
+func _spawn_splash() -> void:
+	if not splash_scene:
+		return
+	var splash := splash_scene.instantiate() as CPUParticles2D
+	if splash:
+		get_parent().add_child(splash)
+		splash.global_position = global_position
+		splash.emitting = true
+
+# 泡生成
+func _spawn_bubbles() -> void:
+	if not bubble_scene:
+		return
+	var bubbles := bubble_scene.instantiate() as CPUParticles2D
+	if bubbles:
+		get_parent().add_child(bubbles)
+		bubbles.global_position = global_position
+		var scale_val: float = lerp(1.25, 0.6, depth)
+		bubbles.scale = Vector2(scale_val, scale_val)
+		bubbles.emitting = true
 
 # Boids 3原則（分離、整列、結合）の合算ベクトル算出
 func _calculate_boids(neighbors: Array[Node2D]) -> Vector2:
