@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>デジタル水族館 塗り絵アプリ</title>
     <link rel="icon" href="data:,">
+    <!-- Google Fonts の読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,31 +22,43 @@
         </header>
         
         <main>
-            <section id="step-select" class="step-section">
+            <section id="step-select" class="step-section animate-fade-in">
                 <h2>ステップ 1: 魚を選ぶ</h2>
                 <p>好きな魚をタップしてね！</p>
-                <div class="placeholder-grid">
-                    <div class="fish-thumb" onclick="selectFish('fish_01')">さかな 1</div>
-                    <div class="fish-thumb" onclick="selectFish('fish_02')">さかな 2</div>
+                <div id="fish-select-grid" class="fish-grid">
+                    <!-- JavaScript から動的にサムネイルが挿入されます -->
+                    <div class="loading-placeholder">読み込み中...</div>
                 </div>
             </section>
 
-            <section id="step-paint" class="step-section hidden">
+            <section id="step-paint" class="step-section hidden animate-fade-in">
                 <h2>ステップ 2: 色をぬる</h2>
-                <div class="canvas-container">
-                    <canvas id="paint-canvas" width="1024" height="1024"></canvas>
+                <p class="paint-instruction">白いところをタップすると、色がぬれるよ！</p>
+                <div class="canvas-outer-container">
+                    <div id="canvas-container" class="canvas-container">
+                        <canvas id="paint-canvas" width="1024" height="1024"></canvas>
+                    </div>
                 </div>
-                <div class="palette">
-                    <button class="color-btn" style="background: #ff5e57;" onclick="setColor('#ff5e57')"></button>
-                    <button class="color-btn" style="background: #ffdd59;" onclick="setColor('#ffdd59')"></button>
-                    <button class="color-btn" style="background: #0be881;" onclick="setColor('#0be881')"></button>
-                    <button class="color-btn" style="background: #00d8d6;" onclick="setColor('#00d8d6')"></button>
-                    <button class="color-btn" style="background: #3c40c6;" onclick="setColor('#3c40c6')"></button>
-                    <button class="color-btn" style="background: #f53b57;" onclick="setColor('#f53b57')"></button>
+                <div class="palette-container">
+                    <div class="palette">
+                        <button class="color-btn active" style="background: #ff5e57;" onclick="setColor('#ff5e57', this)"></button>
+                        <button class="color-btn" style="background: #ff4757;" onclick="setColor('#ff4757', this)"></button>
+                        <button class="color-btn" style="background: #ff6b81;" onclick="setColor('#ff6b81', this)"></button>
+                        <button class="color-btn" style="background: #ffa502;" onclick="setColor('#ffa502', this)"></button>
+                        <button class="color-btn" style="background: #eccc68;" onclick="setColor('#eccc68', this)"></button>
+                        <button class="color-btn" style="background: #2ed573;" onclick="setColor('#2ed573', this)"></button>
+                        <button class="color-btn" style="background: #1e90ff;" onclick="setColor('#1e90ff', this)"></button>
+                        <button class="color-btn" style="background: #70a1ff;" onclick="setColor('#70a1ff', this)"></button>
+                        <button class="color-btn" style="background: #3742fa;" onclick="setColor('#3742fa', this)"></button>
+                        <button class="color-btn" style="background: #9c88ff;" onclick="setColor('#9c88ff', this)"></button>
+                        <button class="color-btn" style="background: #e056fd;" onclick="setColor('#e056fd', this)"></button>
+                        <button class="color-btn" style="background: #ffffff;" onclick="setColor('#ffffff', this)"></button>
+                    </div>
+                    <button class="reset-btn" onclick="resetCanvas()">🎨 ぬりなおす</button>
                 </div>
                 <div class="actions">
-                    <button onclick="backToSelect()">もどる</button>
-                    <button id="send-btn" onclick="sendFish()">水槽へ放流する！</button>
+                    <button class="back-btn" onclick="backToSelect()">← もどる</button>
+                    <button id="send-btn" class="send-btn" onclick="sendFish()">水槽へ放流する！ 🚀</button>
                 </div>
                 <p id="send-status" class="send-status" role="status" aria-live="polite"></p>
             </section>
