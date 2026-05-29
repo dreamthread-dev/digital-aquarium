@@ -19,6 +19,8 @@ func _ready() -> void:
 # サーバーへの接続開始
 func _connect_to_server() -> void:
 	socket = WebSocketPeer.new()
+	socket.inbound_buffer_size = 1024 * 1024 * 8 # 8MB (画像転送などの大容量パケットに対応)
+	socket.outbound_buffer_size = 1024 * 1024 * 8 # 8MB
 	var err := socket.connect_to_url(websocket_url)
 	if err != OK:
 		print("[WebSocket] Connection attempt failed immediately. Code: ", err)

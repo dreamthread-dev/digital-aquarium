@@ -89,6 +89,9 @@ func _spawn_initial_fishes() -> void:
 	for i in range(initial_fish_count):
 		# ランダムなテクスチャを選択
 		var tex: Texture2D = default_textures[randi() % default_textures.size()]
+		if not tex:
+			push_warning("Skipping initial fish spawn: Texture is null.")
+			continue
 		
 		# 画面の有効範囲内のランダムな位置に配置
 		var margin: float = 400.0
@@ -103,6 +106,10 @@ func _spawn_initial_fishes() -> void:
 
 # 新規魚の生成 (WebSocket等からの受信時も呼び出す共通IF)
 func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0, start_falling: bool = true) -> void:
+	if not texture:
+		push_error("FishManager: spawn_fish called with null texture. Aborting spawn.")
+		return
+
 	if not fish_scene:
 		push_error("FishManager: fish_scene PackedScene is not configured.")
 		return

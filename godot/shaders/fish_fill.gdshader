@@ -20,7 +20,7 @@ void fragment() {
 		for (int i = 1; i <= STEPS; i++) {
 			float offset = float(i) / float(STEPS) * UV.y;
 			vec2 scan_uv = vec2(UV.x, UV.y - offset);
-			if (texture(TEXTURE, scan_uv).a > 0.5) {
+			if (textureLod(TEXTURE, scan_uv, 0.0).a > 0.5) {
 				hit_up = true;
 				break;
 			}
@@ -30,7 +30,7 @@ void fragment() {
 		for (int i = 1; i <= STEPS; i++) {
 			float offset = float(i) / float(STEPS) * (1.0 - UV.y);
 			vec2 scan_uv = vec2(UV.x, UV.y + offset);
-			if (texture(TEXTURE, scan_uv).a > 0.5) {
+			if (textureLod(TEXTURE, scan_uv, 0.0).a > 0.5) {
 				hit_down = true;
 				break;
 			}
@@ -40,7 +40,7 @@ void fragment() {
 		for (int i = 1; i <= STEPS; i++) {
 			float offset = float(i) / float(STEPS) * UV.x;
 			vec2 scan_uv = vec2(UV.x - offset, UV.y);
-			if (texture(TEXTURE, scan_uv).a > 0.5) {
+			if (textureLod(TEXTURE, scan_uv, 0.0).a > 0.5) {
 				hit_left = true;
 				break;
 			}
@@ -50,7 +50,7 @@ void fragment() {
 		for (int i = 1; i <= STEPS; i++) {
 			float offset = float(i) / float(STEPS) * (1.0 - UV.x);
 			vec2 scan_uv = vec2(UV.x + offset, UV.y);
-			if (texture(TEXTURE, scan_uv).a > 0.5) {
+			if (textureLod(TEXTURE, scan_uv, 0.0).a > 0.5) {
 				hit_right = true;
 				break;
 			}
