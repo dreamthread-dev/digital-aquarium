@@ -1,7 +1,0 @@
-INFO:server:Mounted server static files from: /workspace/server/static
-INFO:server:Mounted webapp static files from: /workspace/webapp
-INFO:     Started server process [13]
-INFO:     Waiting for application startup.
-INFO:server:Fish queue worker started
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
