@@ -1,19 +1,29 @@
-[gd_scene load_steps=7 format=3 uid="uid://dmyg1x2g4f5m"]
+[gd_scene load_steps=11 format=3 uid="uid://dmyg1x2g4f5m"]
 
 [ext_resource type="Shader" path="res://shaders/aquarium_bg.gdshader" id="1_kjuqy"]
 [ext_resource type="Script" path="res://scripts/fish_manager.gd" id="2_mager"]
 [ext_resource type="Script" path="res://scripts/web_socket_client.gd" id="3_wscli"]
 [ext_resource type="PackedScene" uid="uid://cxpyg8mx2f5m" path="res://scenes/hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" uid="uid://cxpyg8mx2f5m" path="res://scenes/debug_ui.tscn" id="5_dbgui"]
+[ext_resource type="Texture2D" path="res://assets/aquarium_sand_bottom.png" id="6_sand"]
+[ext_resource type="Texture2D" path="res://assets/aquarium_decorations.png" id="7_decorations"]
+[ext_resource type="Shader" path="res://shaders/seaweed.gdshader" id="8_seaweed_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j0k6b"]
 shader = ExtResource("1_kjuqy")
-shader_parameter/color_top = Color(0.02, 0.12, 0.22, 1)
-shader_parameter/color_bottom = Color(0.005, 0.03, 0.08, 1)
+shader_parameter/color_top = Color(0.08, 0.35, 0.58, 1)
+shader_parameter/color_bottom = Color(0.015, 0.09, 0.22, 1)
 shader_parameter/caustics_speed = 0.5
-shader_parameter/caustics_scale = 2.0
-shader_parameter/caustics_strength = 0.18
+shader_parameter/caustics_scale = 3.0
+shader_parameter/caustics_strength = 0.28
 shader_parameter/caustics_fade = 1.2
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sway"]
+shader = ExtResource("8_seaweed_shader")
+shader_parameter/speed = 1.0
+shader_parameter/strength = 0.12
+shader_parameter/detail = 2.5
+shader_parameter/sway_width = 35.0
 
 [node name="AquariumScene" type="Node2D"]
 
@@ -22,6 +32,35 @@ material = SubResource("ShaderMaterial_j0k6b")
 offset_right = 8640.0
 offset_bottom = 3840.0
 mouse_filter = 2
+
+[node name="BackgroundBubbles" type="CPUParticles2D" parent="."]
+position = Vector2(4320, 3800)
+amount = 80
+lifetime = 12.0
+preprocess = 12.0
+emission_shape = 3
+emission_rect_extents = Vector2(4320, 10)
+direction = Vector2(0, -1)
+spread = 5.0
+gravity = Vector2(0, -12)
+initial_velocity_min = 20.0
+initial_velocity_max = 50.0
+scale_amount_min = 3.0
+scale_amount_max = 8.0
+color = Color(0.7, 0.95, 1, 0.25)
+
+[node name="SandBottom" type="TextureRect" parent="."]
+offset_top = 3440.0
+offset_right = 8640.0
+offset_bottom = 3840.0
+texture = ExtResource("6_sand")
+stretch_mode = 1
+
+[node name="Decorations" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_sway")
+position = Vector2(4320, 3200)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("7_decorations")
 
 [node name="FishManager" type="Node2D" parent="."]
 script = ExtResource("2_mager")

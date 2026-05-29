@@ -448,5 +448,31 @@ async function sendFish() {
     }
 }
 
+// 動的な泡の生成
+function startBubbleAnimation() {
+    const container = document.getElementById('bubbles-container');
+    if (!container) return;
+
+    setInterval(() => {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        const size = Math.random() * 30 + 10;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${Math.random() * 100}%`;
+        
+        const duration = Math.random() * 5 + 5;
+        bubble.style.animationDuration = `${duration}s`;
+        
+        container.appendChild(bubble);
+        
+        setTimeout(() => {
+            bubble.remove();
+        }, duration * 1000);
+    }, 800);
+}
+
 connectWebSocket();
 renderTemplateGrid();
+startBubbleAnimation();
