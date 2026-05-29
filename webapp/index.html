@@ -57,6 +57,14 @@
                     </div>
                     <button class="reset-btn" onclick="resetCanvas()">🎨 ぬりなおす</button>
                 </div>
+                <div class="speed-container">
+                    <span class="speed-label">およぐスピード：</span>
+                    <div class="speed-selector">
+                        <button class="speed-btn" data-speed="slow" onclick="setSpeed('slow', this)">おそい</button>
+                        <button class="speed-btn active" data-speed="medium" onclick="setSpeed('medium', this)">ふつう</button>
+                        <button class="speed-btn" data-speed="fast" onclick="setSpeed('fast', this)">はやい</button>
+                    </div>
+                </div>
                 <div class="actions">
                     <button class="back-btn" onclick="backToSelect()">← もどる</button>
                     <button id="send-btn" class="send-btn" onclick="sendFish()">水槽へ放流する！ 🚀</button>
