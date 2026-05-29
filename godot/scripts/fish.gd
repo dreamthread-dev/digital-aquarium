@@ -260,8 +260,11 @@ func _calculate_boids(neighbors: Array[Node2D]) -> Vector2:
 	var combined_force: Vector2 = Vector2.ZERO
 	
 	if separation_count > 0:
-		separation_force = (separation_force / float(separation_count)).normalized() * speed
-		combined_force += (separation_force - velocity) * separation_weight
+		var avg_separation: Vector2 = separation_force / float(separation_count)
+		# .normalized() すると距離の逆数による反発力の強弱が消去されてしまうため、
+		# 平均ベクトルを最大速度に制限（limit_length）することで、至近距離ほど強い反発力になるようにします。
+		var desired_vel: Vector2 = avg_separation.limit_length(speed)
+		combined_force += (desired_vel - velocity) * separation_weight
 		
 	if alignment_count > 0:
 		alignment_vel = (alignment_vel / float(alignment_count)).normalized() * speed

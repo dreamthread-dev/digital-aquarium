@@ -26,8 +26,8 @@ var alignment_radius: float = 150.0
 var cohesion_radius: float = 200.0
 
 var separation_weight: float = 1.5
-var alignment_weight: float = 1.0
-var cohesion_weight: float = 1.0
+var alignment_weight: float = 0.0 # 無効化 (群れ形成防止)
+var cohesion_weight: float = 0.0  # 無効化 (団子状態防止)
 var wander_weight: float = 0.3
 var wall_avoid_weight: float = 2.5
 
@@ -214,8 +214,15 @@ func _process(delta: float) -> void:
 		
 		# アクティブな魚のみ近傍探索を行う
 		if fish.current_state == Fish.State.STATE_ACTIVE:
-			# 周囲の探索範囲 (最も大きい半径を基準にする)
-			var query_radius: float = maxf(cohesion_radius, maxf(alignment_radius, separation_radius))
+			# 周囲の探索範囲 (有効な挙動の最大半径を基準にする)
+			var query_radius: float = 0.0
+			if separation_weight > 0.0:
+				query_radius = maxf(query_radius, separation_radius)
+			if alignment_weight > 0.0:
+				query_radius = maxf(query_radius, alignment_radius)
+			if cohesion_weight > 0.0:
+				query_radius = maxf(query_radius, cohesion_radius)
+			
 			var query_rect: Rect2 = Rect2(
 				fish.global_position - Vector2(query_radius, query_radius),
 				Vector2(query_radius * 2.0, query_radius * 2.0)
