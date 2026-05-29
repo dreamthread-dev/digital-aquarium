@@ -1,10 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://cxpyg8mx2f5m"]
+[gd_scene load_steps=5 format=3 uid="uid://cxpyg8mx2f5m"]
 
 [ext_resource type="Script" path="res://scripts/fish.gd" id="1_kjuqy"]
 [ext_resource type="Texture2D" path="res://assets/default_fish/fish_01.png" id="2_f53b5"]
+[ext_resource type="Shader" path="res://shaders/fish_fill.gdshader" id="3_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fish"]
+shader = ExtResource("3_shader")
 
 [node name="Fish" type="Node2D"]
 script = ExtResource("1_kjuqy")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_fish")
 texture = ExtResource("2_f53b5")
