@@ -11,6 +11,19 @@ const FISH_TEMPLATES = [
 let selectedFishId = null;
 let currentColor = '#ff5e57';
 let templateImg = null;
+let currentSpeed = 'medium'; // slow, medium, fast
+
+function setSpeed(speed, element) {
+    console.log(`Speed set to: ${speed}`);
+    currentSpeed = speed;
+    
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    if (element) {
+        element.classList.add('active');
+    }
+}
 
 const canvas = document.getElementById('paint-canvas');
 const ctx = canvas.getContext('2d');
@@ -174,6 +187,13 @@ function backToSelect() {
     templateImg = null;
     sendButton.disabled = false;
     setSendStatus('');
+    currentSpeed = 'medium';
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-speed') === 'medium') {
+            btn.classList.add('active');
+        }
+    });
     document.getElementById('step-select').classList.remove('hidden');
     document.getElementById('step-paint').classList.add('hidden');
 }
@@ -420,6 +440,7 @@ async function sendFish() {
         const message = {
             type: 'fish',
             image: dataUrl,
+            speed: currentSpeed,
             timestamp: Math.floor(Date.now() / 1000)
         };
 

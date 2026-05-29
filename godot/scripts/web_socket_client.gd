@@ -10,7 +10,7 @@ var is_connected_to_server: bool = false
 var reconnect_timer: float = 0.0
 
 # 魚画像デコード成功時のシグナル
-signal fish_received(texture: Texture2D)
+signal fish_received(texture: Texture2D, speed: String)
 
 func _ready() -> void:
 	print("[WebSocket] Starting client. Target URL: ", websocket_url)
@@ -95,6 +95,7 @@ func _handle_message(text: String) -> void:
 	
 	if msg_type == "fish":
 		var b64_img: String = msg_dict.get("image", "")
+		var speed_type: String = msg_dict.get("speed", "medium") # スピード情報を取得 (デフォルトはmedium)
 		if b64_img.is_empty():
 			push_error("[WebSocket] Received fish message without image data.")
 			return
@@ -119,5 +120,5 @@ func _handle_message(text: String) -> void:
 			
 		# ImageTexture に変換してシグナルで配送
 		var texture := ImageTexture.create_from_image(image)
-		print("[WebSocket] Successfully received and decoded new fish image. Emitting fish_received signal.")
-		fish_received.emit(texture)
+		print("[WebSocket] Successfully received and decoded new fish image. Emitting fish_received signal with speed: ", speed_type)
+		fish_received.emit(texture, speed_type)

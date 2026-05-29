@@ -86,12 +86,14 @@ func _spawn_initial_fishes() -> void:
 		push_error("Cannot spawn initial fishes: No textures loaded.")
 		return
 		
+	var speeds: Array[String] = ["slow", "medium", "fast"]
 	for i in range(initial_fish_count):
-		# ランダムなテクスチャを選択
+		# ランダムなテクスチャとスピードを選択
 		var tex: Texture2D = default_textures[randi() % default_textures.size()]
 		if not tex:
 			push_warning("Skipping initial fish spawn: Texture is null.")
 			continue
+		var rand_speed: String = speeds[randi() % speeds.size()]
 		
 		# 画面の有効範囲内のランダムな位置に配置
 		var margin: float = 400.0
@@ -102,10 +104,10 @@ func _spawn_initial_fishes() -> void:
 		# 奥行き (depth) をランダムに付与 (0.0 手前 〜 1.0 奥)
 		var p_depth: float = randf()
 		
-		spawn_fish(tex, start_pos, p_depth, false)
+		spawn_fish(tex, start_pos, p_depth, false, rand_speed)
 
 # 新規魚の生成 (WebSocket等からの受信時も呼び出す共通IF)
-func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0, start_falling: bool = true) -> void:
+func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0, start_falling: bool = true, speed_type: String = "medium") -> void:
 	if not texture:
 		push_error("FishManager: spawn_fish called with null texture. Aborting spawn.")
 		return
@@ -130,6 +132,7 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 	
 	fish_instance.position = start_pos
 	fish_instance.noise_gen = noise_gen
+	fish_instance.speed_type = speed_type # スピードタイプを反映
 	
 	# Boidsパラメータの初期同期
 	_sync_fish_params(fish_instance)
@@ -162,9 +165,9 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 		if is_instance_valid(oldest_fish):
 			oldest_fish.start_dying()
 
-func _on_fish_received(texture: Texture2D) -> void:
-	spawn_fish(texture, Vector2.ZERO, -1.0, true)
-	logger_info("Spawned a new fish from WebSocket connection.")
+func _on_fish_received(texture: Texture2D, speed: String) -> void:
+	spawn_fish(texture, Vector2.ZERO, -1.0, true, speed)
+	logger_info("Spawned a new fish from WebSocket connection with speed: " + speed)
 
 # 各魚個体へBoidsパラメータを一括同期させる
 func _sync_fish_params(fish: Fish) -> void:
@@ -178,8 +181,14 @@ func _sync_fish_params(fish: Fish) -> void:
 	fish.wander_weight = wander_weight
 	fish.wall_avoid_weight = wall_avoid_weight
 	
-	# 速度と壁マージンの同期
-	fish.speed = base_speed * fish.speed_factor
+	# 速度と壁マージンの同期 (個別スピード設定の反映)
+	var mult: float = 1.0
+	match fish.speed_type:
+		"slow": mult = 0.5
+		"medium": mult = 1.0
+		"fast": mult = 1.8
+		
+	fish.speed = base_speed * fish.speed_factor * mult
 	fish.max_speed = fish.speed * 1.5
 	fish.wall_margin = wall_margin
 

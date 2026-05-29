@@ -18,6 +18,9 @@ var depth: float = 0.0
 var noise_offset: float = 0.0
 var speed_factor: float = 1.0
 
+# スピードタイプ (slow, medium, fast)
+var speed_type: String = "medium"
+
 # 現在の状態
 var current_state: State = State.STATE_ACTIVE
 
