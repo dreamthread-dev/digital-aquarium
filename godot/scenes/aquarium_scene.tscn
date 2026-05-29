@@ -50,7 +50,7 @@ scale_amount_max = 8.0
 color = Color(0.7, 0.95, 1, 0.25)
 
 [node name="SandBottom" type="TextureRect" parent="."]
-offset_top = 3440.0
+offset_top = 3640.0
 offset_right = 8640.0
 offset_bottom = 3840.0
 texture = ExtResource("6_sand")
@@ -58,7 +58,7 @@ stretch_mode = 1
 
 [node name="Decorations" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_sway")
-position = Vector2(4320, 3200)
+position = Vector2(4320, 3400)
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("7_decorations")
 
