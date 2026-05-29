@@ -1,7 +1,11 @@
 const FISH_TEMPLATES = [
     { id: 'fish_01', name: 'さかな', thumb: '/static/thumbnails/fish_01.png', template: '/static/template_fish/fish_01.png' },
     { id: 'fish_02', name: 'いか', thumb: '/static/thumbnails/fish_02.png', template: '/static/template_fish/fish_02.png' },
-    { id: 'fish_03', name: 'たこ', thumb: '/static/thumbnails/fish_03.png', template: '/static/template_fish/fish_03.png' }
+    { id: 'fish_03', name: 'たこ', thumb: '/static/thumbnails/fish_03.png', template: '/static/template_fish/fish_03.png' },
+    { id: 'fish_04', name: 'かめ', thumb: '/static/thumbnails/fish_04.png', template: '/static/template_fish/fish_04.png' },
+    { id: 'fish_05', name: 'さめ', thumb: '/static/thumbnails/fish_05.png', template: '/static/template_fish/fish_05.png' },
+    { id: 'fish_06', name: 'かつお', thumb: '/static/thumbnails/fish_06.png', template: '/static/template_fish/fish_06.png' },
+    { id: 'fish_07', name: 'いるか', thumb: '/static/thumbnails/fish_07.png', template: '/static/template_fish/fish_07.png' }
 ];
 
 let selectedFishId = null;

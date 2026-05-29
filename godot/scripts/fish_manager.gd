@@ -67,7 +67,11 @@ func _load_default_textures() -> void:
 	var paths: Array[String] = [
 		"res://assets/default_fish/fish_01.png",
 		"res://assets/default_fish/fish_02.png",
-		"res://assets/default_fish/fish_03.png"
+		"res://assets/default_fish/fish_03.png",
+		"res://assets/default_fish/fish_04.png",
+		"res://assets/default_fish/fish_05.png",
+		"res://assets/default_fish/fish_06.png",
+		"res://assets/default_fish/fish_07.png"
 	]
 	for path in paths:
 		if ResourceLoader.exists(path):
