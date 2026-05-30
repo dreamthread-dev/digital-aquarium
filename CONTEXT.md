@@ -14,6 +14,7 @@
 | GitHub アカウント | Boom0115（組織: dreamthread-dev） |
 | ユーザーメール | takahashi@dreamthread.co.jp |
 | プロジェクト性質 | イベント用デモ（締め切りなし） |
+| バージョン | v1.0.0 |
 
 ---
 
