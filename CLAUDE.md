@@ -15,15 +15,13 @@ godot --path d:/github/digital-aquarium/godot
 
 ### Python FastAPI サーバーの起動
 ```sh
-cd server
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uv pip install -r server/requirements.txt
+uv run uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### タブレット塗り絵アプリの配信 (サーバーに統合されているが、単体テスト時の簡易サーバー起動例)
 ```sh
-cd webapp
-python -m http.server 8080
+uv run python -m http.server --directory webapp 8080
 ```
 
 ## アーキテクチャ

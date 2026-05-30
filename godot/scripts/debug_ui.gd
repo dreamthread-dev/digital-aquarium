@@ -77,7 +77,6 @@ func _sync_sliders_from_manager() -> void:
 func _on_speed_changed(val: float) -> void:
 	if fish_manager:
 		fish_manager.base_speed = val
-		fish_manager.max_speed = val * 1.5
 		fish_manager.update_all_fish_params()
 	speed_val.text = str(int(val))
 
