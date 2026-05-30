@@ -1,0 +1,8 @@
+{
+    "godotTools.editorPath.godot4": "C:\\Users\\tetsu\\scoop\\shims\\godot.exe",
+    "godotTools.lsp.headless": true,
+    "godotTools.godotProjectRoot": "${workspaceFolder}/godot",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    "python.pyrefly.configPath": "${workspaceFolder}/pyrefly.toml",
+    "python.useEnvironmentsExtension": false
+}

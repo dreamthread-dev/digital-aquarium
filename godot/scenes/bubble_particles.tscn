@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/bubble_particles.gd" id="1_bubble"]
+
+[sub_resource type="Gradient" id="Gradient_bubble"]
+colors = PackedColorArray(0.75, 0.9, 1.0, 0.8, 0.75, 0.9, 1.0, 0.0)
+
+[node name="BubbleParticles" type="CPUParticles2D"]
+emitting = false
+amount = 15
+lifetime = 1.5
+one_shot = true
+explosiveness = 0.3
+direction = Vector2(0, -1)
+spread = 25.0
+gravity = Vector2(0, -120)
+initial_velocity_min = 30.0
+initial_velocity_max = 80.0
+scale_amount_min = 2.5
+scale_amount_max = 6.0
+color_ramp = SubResource("Gradient_bubble")
+script = ExtResource("1_bubble")

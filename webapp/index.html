@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>デジタル水族館 塗り絵アプリ</title>
+    <link rel="icon" href="data:,">
+    <!-- Google Fonts の読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bubbles-container" id="bubbles-container"></div>
+    <div class="container">
+        <header>
+            <h1>🐠 デジタル水族館 塗り絵</h1>
+            <div id="connection-status" class="connection-status" data-state="connecting" aria-live="polite">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="connection-label">接続中</span>
+            </div>
+        </header>
+        
+        <main>
+            <section id="step-select" class="step-section animate-fade-in">
+                <h2>ステップ 1: 魚を選ぶ</h2>
+                <p>好きな魚をタップしてね！</p>
+                <div id="fish-select-grid" class="fish-grid">
+                    <!-- JavaScript から動的にサムネイルが挿入されます -->
+                    <div class="loading-placeholder">読み込み中...</div>
+                </div>
+            </section>
+
+            <section id="step-paint" class="step-section hidden animate-fade-in">
+                <h2>ステップ 2: 色をぬる</h2>
+                <p class="paint-instruction">白いところをタップすると、色がぬれるよ！</p>
+                <div class="canvas-outer-container">
+                    <div id="canvas-container" class="canvas-container">
+                        <canvas id="paint-canvas" width="1024" height="1024"></canvas>
+                    </div>
+                </div>
+                <div class="palette-container">
+                    <div class="palette">
+                        <button class="color-btn active" style="background: #ff5e57;" onclick="setColor('#ff5e57', this)"></button>
+                        <button class="color-btn" style="background: #ff4757;" onclick="setColor('#ff4757', this)"></button>
+                        <button class="color-btn" style="background: #ff6b81;" onclick="setColor('#ff6b81', this)"></button>
+                        <button class="color-btn" style="background: #ffa502;" onclick="setColor('#ffa502', this)"></button>
+                        <button class="color-btn" style="background: #eccc68;" onclick="setColor('#eccc68', this)"></button>
+                        <button class="color-btn" style="background: #2ed573;" onclick="setColor('#2ed573', this)"></button>
+                        <button class="color-btn" style="background: #1e90ff;" onclick="setColor('#1e90ff', this)"></button>
+                        <button class="color-btn" style="background: #70a1ff;" onclick="setColor('#70a1ff', this)"></button>
+                        <button class="color-btn" style="background: #3742fa;" onclick="setColor('#3742fa', this)"></button>
+                        <button class="color-btn" style="background: #9c88ff;" onclick="setColor('#9c88ff', this)"></button>
+                        <button class="color-btn" style="background: #e056fd;" onclick="setColor('#e056fd', this)"></button>
+                        <button class="color-btn" style="background: #ffffff;" onclick="setColor('#ffffff', this)"></button>
+                    </div>
+                    <button class="reset-btn" onclick="resetCanvas()">🎨 ぬりなおす</button>
+                </div>
+                <div class="speed-container">
+                    <span class="speed-label">およぐスピード：</span>
+                    <div class="speed-selector">
+                        <button class="speed-btn" data-speed="slow" onclick="setSpeed('slow', this)">おそい</button>
+                        <button class="speed-btn active" data-speed="medium" onclick="setSpeed('medium', this)">ふつう</button>
+                        <button class="speed-btn" data-speed="fast" onclick="setSpeed('fast', this)">はやい</button>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="back-btn" onclick="backToSelect()">← もどる</button>
+                    <button id="send-btn" class="send-btn" onclick="sendFish()">水槽へ放流する！ 🚀</button>
+                </div>
+                <p id="send-status" class="send-status" role="status" aria-live="polite"></p>
+            </section>
+        </main>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>

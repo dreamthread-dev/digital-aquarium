@@ -1,0 +1,26 @@
+{
+    "name": "Digital Aquarium Server Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    
+    // ホストからコンテナ内の FastAPI サーバーに接続するためのポート転送設定
+    "forwardPorts": [8000],
+    
+    // 開発用のVS Code拡張機能
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance"
+            ]
+        }
+    },
+    
+    // 開発コンテナ起動後のパッケージ最新化
+    "postCreateCommand": "pip install -r requirements.txt"
+}

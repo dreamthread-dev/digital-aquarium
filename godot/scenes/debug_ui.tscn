@@ -1,0 +1,182 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/debug_ui.gd" id="1_dbg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dbg"]
+bg_color = Color(0, 0.03, 0.08, 0.75)
+border_width_left = 2
+border_color = Color(0.1, 0.3, 0.5, 0.4)
+
+[node name="DebugUI" type="CanvasLayer"]
+script = ExtResource("1_dbg")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -400.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dbg")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 25
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "デバッグメニュー (F1)"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SpeedRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/SpeedRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "基準速度"
+
+[node name="Slider" type="HSlider" parent="Panel/VBoxContainer/SpeedRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 50.0
+max_value = 300.0
+value = 120.0
+
+[node name="Value" type="Label" parent="Panel/VBoxContainer/SpeedRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "120"
+horizontal_alignment = 2
+
+[node name="SepRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/SepRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "分離 (Sep)"
+
+[node name="Slider" type="HSlider" parent="Panel/VBoxContainer/SepRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 20.0
+max_value = 200.0
+value = 80.0
+
+[node name="Value" type="Label" parent="Panel/VBoxContainer/SepRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "80"
+horizontal_alignment = 2
+
+[node name="AlignRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/AlignRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "整列 (Align)"
+
+[node name="Slider" type="HSlider" parent="Panel/VBoxContainer/AlignRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 50.0
+max_value = 300.0
+value = 150.0
+
+[node name="Value" type="Label" parent="Panel/VBoxContainer/AlignRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "150"
+horizontal_alignment = 2
+
+[node name="CohesionRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/CohesionRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "結合 (Cohes)"
+
+[node name="Slider" type="HSlider" parent="Panel/VBoxContainer/CohesionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 50.0
+max_value = 400.0
+value = 200.0
+
+[node name="Value" type="Label" parent="Panel/VBoxContainer/CohesionRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "200"
+horizontal_alignment = 2
+
+[node name="WallRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/WallRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "壁回避距離"
+
+[node name="Slider" type="HSlider" parent="Panel/VBoxContainer/WallRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 100.0
+max_value = 800.0
+value = 300.0
+
+[node name="Value" type="Label" parent="Panel/VBoxContainer/WallRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "300"
+horizontal_alignment = 2
+
+[node name="WanderRow" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/WanderRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Wander強度"
+
+[node name="Slider" type="HSlider" parent="Panel/VBoxContainer/WanderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.1
+value = 0.3
+
+[node name="Value" type="Label" parent="Panel/VBoxContainer/WanderRow"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "0.3"
+horizontal_alignment = 2
