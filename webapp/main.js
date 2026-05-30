@@ -1,12 +1,29 @@
 const FISH_TEMPLATES = [
     { id: 'fish_01', name: 'さかな', thumb: '/static/thumbnails/fish_01.png', template: '/static/template_fish/fish_01.png' },
     { id: 'fish_02', name: 'いか', thumb: '/static/thumbnails/fish_02.png', template: '/static/template_fish/fish_02.png' },
-    { id: 'fish_03', name: 'たこ', thumb: '/static/thumbnails/fish_03.png', template: '/static/template_fish/fish_03.png' }
+    { id: 'fish_03', name: 'たこ', thumb: '/static/thumbnails/fish_03.png', template: '/static/template_fish/fish_03.png' },
+    { id: 'fish_04', name: 'かめ', thumb: '/static/thumbnails/fish_04.png', template: '/static/template_fish/fish_04.png' },
+    { id: 'fish_05', name: 'さめ', thumb: '/static/thumbnails/fish_05.png', template: '/static/template_fish/fish_05.png' },
+    { id: 'fish_06', name: 'かつお', thumb: '/static/thumbnails/fish_06.png', template: '/static/template_fish/fish_06.png' },
+    { id: 'fish_07', name: 'いるか', thumb: '/static/thumbnails/fish_07.png', template: '/static/template_fish/fish_07.png' }
 ];
 
 let selectedFishId = null;
 let currentColor = '#ff5e57';
 let templateImg = null;
+let currentSpeed = 'medium'; // slow, medium, fast
+
+function setSpeed(speed, element) {
+    console.log(`Speed set to: ${speed}`);
+    currentSpeed = speed;
+    
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    if (element) {
+        element.classList.add('active');
+    }
+}
 
 const canvas = document.getElementById('paint-canvas');
 const ctx = canvas.getContext('2d');
@@ -170,6 +187,13 @@ function backToSelect() {
     templateImg = null;
     sendButton.disabled = false;
     setSendStatus('');
+    currentSpeed = 'medium';
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-speed') === 'medium') {
+            btn.classList.add('active');
+        }
+    });
     document.getElementById('step-select').classList.remove('hidden');
     document.getElementById('step-paint').classList.add('hidden');
 }
@@ -416,6 +440,7 @@ async function sendFish() {
         const message = {
             type: 'fish',
             image: dataUrl,
+            speed: currentSpeed,
             timestamp: Math.floor(Date.now() / 1000)
         };
 
@@ -448,5 +473,31 @@ async function sendFish() {
     }
 }
 
+// 動的な泡の生成
+function startBubbleAnimation() {
+    const container = document.getElementById('bubbles-container');
+    if (!container) return;
+
+    setInterval(() => {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        const size = Math.random() * 30 + 10;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${Math.random() * 100}%`;
+        
+        const duration = Math.random() * 5 + 5;
+        bubble.style.animationDuration = `${duration}s`;
+        
+        container.appendChild(bubble);
+        
+        setTimeout(() => {
+            bubble.remove();
+        }, duration * 1000);
+    }, 800);
+}
+
 connectWebSocket();
 renderTemplateGrid();
+startBubbleAnimation();

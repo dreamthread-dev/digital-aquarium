@@ -26,8 +26,8 @@ var alignment_radius: float = 150.0
 var cohesion_radius: float = 200.0
 
 var separation_weight: float = 1.5
-var alignment_weight: float = 1.0
-var cohesion_weight: float = 1.0
+var alignment_weight: float = 0.0 # 無効化 (群れ形成防止)
+var cohesion_weight: float = 0.0  # 無効化 (団子状態防止)
 var wander_weight: float = 0.3
 var wall_avoid_weight: float = 2.5
 
@@ -67,7 +67,11 @@ func _load_default_textures() -> void:
 	var paths: Array[String] = [
 		"res://assets/default_fish/fish_01.png",
 		"res://assets/default_fish/fish_02.png",
-		"res://assets/default_fish/fish_03.png"
+		"res://assets/default_fish/fish_03.png",
+		"res://assets/default_fish/fish_04.png",
+		"res://assets/default_fish/fish_05.png",
+		"res://assets/default_fish/fish_06.png",
+		"res://assets/default_fish/fish_07.png"
 	]
 	for path in paths:
 		if ResourceLoader.exists(path):
@@ -82,9 +86,14 @@ func _spawn_initial_fishes() -> void:
 		push_error("Cannot spawn initial fishes: No textures loaded.")
 		return
 		
+	var speeds: Array[String] = ["slow", "medium", "fast"]
 	for i in range(initial_fish_count):
-		# ランダムなテクスチャを選択
+		# ランダムなテクスチャとスピードを選択
 		var tex: Texture2D = default_textures[randi() % default_textures.size()]
+		if not tex:
+			push_warning("Skipping initial fish spawn: Texture is null.")
+			continue
+		var rand_speed: String = speeds[randi() % speeds.size()]
 		
 		# 画面の有効範囲内のランダムな位置に配置
 		var margin: float = 400.0
@@ -95,10 +104,14 @@ func _spawn_initial_fishes() -> void:
 		# 奥行き (depth) をランダムに付与 (0.0 手前 〜 1.0 奥)
 		var p_depth: float = randf()
 		
-		spawn_fish(tex, start_pos, p_depth, false)
+		spawn_fish(tex, start_pos, p_depth, false, rand_speed)
 
 # 新規魚の生成 (WebSocket等からの受信時も呼び出す共通IF)
-func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0, start_falling: bool = true) -> void:
+func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: float = -1.0, start_falling: bool = true, speed_type: String = "medium") -> void:
+	if not texture:
+		push_error("FishManager: spawn_fish called with null texture. Aborting spawn.")
+		return
+
 	if not fish_scene:
 		push_error("FishManager: fish_scene PackedScene is not configured.")
 		return
@@ -119,6 +132,7 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 	
 	fish_instance.position = start_pos
 	fish_instance.noise_gen = noise_gen
+	fish_instance.speed_type = speed_type # スピードタイプを反映
 	
 	# Boidsパラメータの初期同期
 	_sync_fish_params(fish_instance)
@@ -151,9 +165,9 @@ func spawn_fish(texture: Texture2D, start_pos: Vector2 = Vector2.ZERO, p_depth: 
 		if is_instance_valid(oldest_fish):
 			oldest_fish.start_dying()
 
-func _on_fish_received(texture: Texture2D) -> void:
-	spawn_fish(texture, Vector2.ZERO, -1.0, true)
-	logger_info("Spawned a new fish from WebSocket connection.")
+func _on_fish_received(texture: Texture2D, speed: String) -> void:
+	spawn_fish(texture, Vector2.ZERO, -1.0, true, speed)
+	logger_info("Spawned a new fish from WebSocket connection with speed: " + speed)
 
 # 各魚個体へBoidsパラメータを一括同期させる
 func _sync_fish_params(fish: Fish) -> void:
@@ -167,8 +181,14 @@ func _sync_fish_params(fish: Fish) -> void:
 	fish.wander_weight = wander_weight
 	fish.wall_avoid_weight = wall_avoid_weight
 	
-	# 速度と壁マージンの同期
-	fish.speed = base_speed * fish.speed_factor
+	# 速度と壁マージンの同期 (個別スピード設定の反映)
+	var mult: float = 1.0
+	match fish.speed_type:
+		"slow": mult = 0.5
+		"medium": mult = 1.0
+		"fast": mult = 1.8
+		
+	fish.speed = base_speed * fish.speed_factor * mult
 	fish.max_speed = fish.speed * 1.5
 	fish.wall_margin = wall_margin
 
@@ -203,8 +223,15 @@ func _process(delta: float) -> void:
 		
 		# アクティブな魚のみ近傍探索を行う
 		if fish.current_state == Fish.State.STATE_ACTIVE:
-			# 周囲の探索範囲 (最も大きい半径を基準にする)
-			var query_radius: float = maxf(cohesion_radius, maxf(alignment_radius, separation_radius))
+			# 周囲の探索範囲 (有効な挙動の最大半径を基準にする)
+			var query_radius: float = 0.0
+			if separation_weight > 0.0:
+				query_radius = maxf(query_radius, separation_radius)
+			if alignment_weight > 0.0:
+				query_radius = maxf(query_radius, alignment_radius)
+			if cohesion_weight > 0.0:
+				query_radius = maxf(query_radius, cohesion_radius)
+			
 			var query_rect: Rect2 = Rect2(
 				fish.global_position - Vector2(query_radius, query_radius),
 				Vector2(query_radius * 2.0, query_radius * 2.0)
